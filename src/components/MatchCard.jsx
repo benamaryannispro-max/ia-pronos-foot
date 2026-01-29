@@ -1,9 +1,12 @@
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar, Clock, TrendingUp, Sparkles, CheckCircle2, XCircle, ChevronRight } from "lucide-react";
+import { Calendar, Clock, Sparkles, CheckCircle2, XCircle, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PredictionBadge from "./PredictionBadge";
+import TeamLogo from "./TeamLogo";
+import LeagueLogo from "./LeagueLogo";
+import BookmakerOdds from "./BookmakerOdds";
 import { Button } from "@/components/ui/button";
 
 export default function MatchCard({ match, onAnalyze, isAnalyzing, onViewDetails }) {
@@ -29,19 +32,13 @@ export default function MatchCard({ match, onAnalyze, isAnalyzing, onViewDetails
     return null;
   };
 
-  const getLeagueEmoji = () => {
-    const emojis = {
-      "Ligue 1": "🇫🇷",
-      "Premier League": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-      "La Liga": "🇪🇸",
-      "Serie A": "🇮🇹",
-      "Bundesliga": "🇩🇪",
-      "Ligue des Champions": "⭐",
-      "Champions League": "⭐",
-      "Europa League": "🏆"
-    };
-    return emojis[match.league] || "⚽";
+  const bookmakerOdds = {
+    winamax: match.odds_winamax,
+    betclic: match.odds_betclic,
+    parionssport: match.odds_parionssport
   };
+
+  const hasOdds = match.odds_winamax || match.odds_betclic || match.odds_parionssport;
 
   return (
     <motion.div
@@ -62,10 +59,9 @@ export default function MatchCard({ match, onAnalyze, isAnalyzing, onViewDetails
       
       {/* League & Date */}
       <div className="flex items-center justify-between mb-4">
-        <span className="px-3 py-1 rounded-full bg-slate-700/50 text-xs font-medium text-slate-300 flex items-center gap-1.5">
-          <span>{getLeagueEmoji()}</span>
-          {match.league}
-        </span>
+        <div className="px-3 py-1.5 rounded-full bg-slate-700/50 text-xs font-medium text-slate-300">
+          <LeagueLogo league={match.league} size="xs" showName={true} />
+        </div>
         <div className="flex items-center gap-3 text-xs text-slate-400">
           <span className="flex items-center gap-1">
             <Calendar className="w-3.5 h-3.5" />
@@ -81,8 +77,8 @@ export default function MatchCard({ match, onAnalyze, isAnalyzing, onViewDetails
       {/* Teams */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex-1 text-center">
-          <div className="w-14 h-14 mx-auto mb-2 rounded-full bg-slate-700/50 flex items-center justify-center text-2xl">
-            ⚽
+          <div className="mx-auto mb-2">
+            <TeamLogo teamName={match.home_team} size="md" />
           </div>
           <p className="font-semibold text-white text-sm">{match.home_team}</p>
         </div>
@@ -96,12 +92,19 @@ export default function MatchCard({ match, onAnalyze, isAnalyzing, onViewDetails
         </div>
         
         <div className="flex-1 text-center">
-          <div className="w-14 h-14 mx-auto mb-2 rounded-full bg-slate-700/50 flex items-center justify-center text-2xl">
-            ⚽
+          <div className="mx-auto mb-2">
+            <TeamLogo teamName={match.away_team} size="md" />
           </div>
           <p className="font-semibold text-white text-sm">{match.away_team}</p>
         </div>
       </div>
+
+      {/* Bookmaker Odds */}
+      {hasOdds && (
+        <div className="mb-4">
+          <BookmakerOdds odds={bookmakerOdds} compact={true} />
+        </div>
+      )}
 
       {/* Prediction */}
       {match.prediction ? (
@@ -109,14 +112,6 @@ export default function MatchCard({ match, onAnalyze, isAnalyzing, onViewDetails
           <div className="flex items-center justify-center">
             <PredictionBadge prediction={match.prediction} confidence={match.confidence} />
           </div>
-          
-          {match.odds && (
-            <div className="flex items-center justify-center gap-2 text-sm">
-              <TrendingUp className="w-4 h-4 text-amber-400" />
-              <span className="text-slate-400">Cote estimée:</span>
-              <span className="font-bold text-amber-400">{match.odds.toFixed(2)}</span>
-            </div>
-          )}
           
           {match.analysis && (
             <p className="text-xs text-slate-400 text-center line-clamp-2 mt-2">

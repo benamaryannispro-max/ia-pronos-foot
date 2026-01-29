@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
-import { Trophy, Target, TrendingUp, Zap, Sparkles, RefreshCw, History, Settings } from "lucide-react";
+import { Trophy, Target, TrendingUp, Zap, Sparkles, RefreshCw, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import StatsCard from "@/components/StatsCard";
@@ -63,7 +63,14 @@ Match: ${match.home_team} vs ${match.away_team}
 Compétition: ${match.league}
 Date: ${match.match_date}
 
-Recherche et analyse:
+IMPORTANT: Recherche également les COTES ACTUELLES sur les bookmakers suivants:
+- Winamax
+- Betclic  
+- Parions Sport (FDJ)
+
+Pour chaque bookmaker, donne les cotes 1N2 (victoire domicile, nul, victoire extérieur).
+
+Analyse également:
 - La forme actuelle des deux équipes (5 derniers matchs)
 - Les confrontations directes récentes
 - Les absences et blessures connues
@@ -85,16 +92,39 @@ Donne ton analyse détaillée et ton pronostic avec un niveau de confiance réal
               type: "number",
               description: "Niveau de confiance entre 55 et 85"
             },
-            odds: {
-              type: "number",
-              description: "Cote estimée entre 1.30 et 4.00"
-            },
             analysis: {
               type: "string",
               description: "Analyse détaillée en 3-4 phrases incluant forme récente, stats clés et justification du pronostic"
+            },
+            odds_winamax: {
+              type: "object",
+              properties: {
+                home: { type: "number" },
+                draw: { type: "number" },
+                away: { type: "number" },
+                recommended: { type: "number", description: "La cote correspondant au pronostic" }
+              }
+            },
+            odds_betclic: {
+              type: "object",
+              properties: {
+                home: { type: "number" },
+                draw: { type: "number" },
+                away: { type: "number" },
+                recommended: { type: "number", description: "La cote correspondant au pronostic" }
+              }
+            },
+            odds_parionssport: {
+              type: "object",
+              properties: {
+                home: { type: "number" },
+                draw: { type: "number" },
+                away: { type: "number" },
+                recommended: { type: "number", description: "La cote correspondant au pronostic" }
+              }
             }
           },
-          required: ["prediction", "confidence", "odds", "analysis"]
+          required: ["prediction", "confidence", "analysis"]
         }
       });
 
@@ -103,8 +133,10 @@ Donne ton analyse détaillée et ton pronostic avec un niveau de confiance réal
         data: {
           prediction: result.prediction,
           confidence: Math.min(85, Math.max(55, result.confidence)),
-          odds: result.odds,
-          analysis: result.analysis
+          analysis: result.analysis,
+          odds_winamax: result.odds_winamax,
+          odds_betclic: result.odds_betclic,
+          odds_parionssport: result.odds_parionssport
         }
       });
 
@@ -117,7 +149,6 @@ Donne ton analyse détaillée et ton pronostic avec un niveau de confiance réal
         match_date: match.match_date,
         prediction: result.prediction,
         confidence: result.confidence,
-        odds: result.odds,
         result: "pending"
       });
 
@@ -198,7 +229,7 @@ Donne ton analyse détaillée et ton pronostic avec un niveau de confiance réal
             Prono<span className="text-amber-400">Foot</span> IA
           </h1>
           <p className="text-slate-400 text-lg max-w-xl mx-auto">
-            Analyse intelligente des matchs de football pour des pronostics optimisés
+            Analyse intelligente avec cotes Winamax, Betclic & Parions Sport
           </p>
         </motion.div>
 

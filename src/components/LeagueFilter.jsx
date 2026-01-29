@@ -1,14 +1,16 @@
+import { useState } from "react";
 import { cn } from "@/lib/utils";
+import LeagueLogo from "./LeagueLogo";
 
 const leagues = [
-  { id: "all", name: "Tous", emoji: "🌍" },
-  { id: "Ligue 1", name: "Ligue 1", emoji: "🇫🇷" },
-  { id: "Premier League", name: "Premier League", emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
-  { id: "La Liga", name: "La Liga", emoji: "🇪🇸" },
-  { id: "Serie A", name: "Serie A", emoji: "🇮🇹" },
-  { id: "Bundesliga", name: "Bundesliga", emoji: "🇩🇪" },
-  { id: "Ligue des Champions", name: "Champions League", emoji: "⭐" },
-  { id: "Europa League", name: "Europa League", emoji: "🏆" }
+  { id: "all", name: "Tous" },
+  { id: "Ligue 1", name: "Ligue 1" },
+  { id: "Premier League", name: "Premier League" },
+  { id: "La Liga", name: "La Liga" },
+  { id: "Serie A", name: "Serie A" },
+  { id: "Bundesliga", name: "Bundesliga" },
+  { id: "Ligue des Champions", name: "Champions League" },
+  { id: "Europa League", name: "Europa League" }
 ];
 
 export default function LeagueFilter({ selectedLeague, onLeagueChange }) {
@@ -26,8 +28,14 @@ export default function LeagueFilter({ selectedLeague, onLeagueChange }) {
               : "bg-slate-800/50 text-slate-300 border-slate-700 hover:border-amber-500/50"
           )}
         >
-          <span>{league.emoji}</span>
-          <span className="hidden sm:inline">{league.name}</span>
+          {league.id === "all" ? (
+            <>
+              <span>🌍</span>
+              <span>Tous</span>
+            </>
+          ) : (
+            <LeagueLogo league={league.id} size="xs" showName={true} />
+          )}
         </button>
       ))}
     </div>

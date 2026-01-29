@@ -3,6 +3,9 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { TrendingUp, Calendar, Trophy, Target, BarChart3 } from "lucide-react";
 import PredictionBadge from "./PredictionBadge";
+import TeamLogo from "./TeamLogo";
+import LeagueLogo from "./LeagueLogo";
+import BookmakerOdds from "./BookmakerOdds";
 
 const predictionLabels = {
   "home_win": "Victoire Domicile",
@@ -18,10 +21,18 @@ export default function AnalysisDialog({ match, open, onOpenChange, historyStats
   if (!match) return null;
 
   const matchDate = new Date(match.match_date);
+  
+  const bookmakerOdds = {
+    winamax: match.odds_winamax,
+    betclic: match.odds_betclic,
+    parionssport: match.odds_parionssport
+  };
+
+  const hasOdds = match.odds_winamax || match.odds_betclic || match.odds_parionssport;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg">
+      <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-amber-400" />
@@ -33,9 +44,9 @@ export default function AnalysisDialog({ match, open, onOpenChange, historyStats
           {/* Match Info */}
           <div className="bg-slate-800/50 rounded-xl p-4">
             <div className="flex items-center justify-between mb-4">
-              <span className="px-3 py-1 rounded-full bg-slate-700 text-xs font-medium">
-                {match.league}
-              </span>
+              <div className="px-3 py-1 rounded-full bg-slate-700">
+                <LeagueLogo league={match.league} size="sm" showName={true} />
+              </div>
               <span className="text-sm text-slate-400 flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
                 {format(matchDate, "EEEE dd MMMM à HH:mm", { locale: fr })}
@@ -44,20 +55,27 @@ export default function AnalysisDialog({ match, open, onOpenChange, historyStats
 
             <div className="flex items-center justify-center gap-6">
               <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-slate-700 flex items-center justify-center text-2xl">
-                  ⚽
+                <div className="mx-auto mb-2">
+                  <TeamLogo teamName={match.home_team} size="lg" />
                 </div>
                 <p className="font-bold text-lg">{match.home_team}</p>
               </div>
               <span className="text-2xl font-bold text-slate-500">VS</span>
               <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-slate-700 flex items-center justify-center text-2xl">
-                  ⚽
+                <div className="mx-auto mb-2">
+                  <TeamLogo teamName={match.away_team} size="lg" />
                 </div>
                 <p className="font-bold text-lg">{match.away_team}</p>
               </div>
             </div>
           </div>
+
+          {/* Bookmaker Odds */}
+          {hasOdds && (
+            <div className="bg-slate-800/50 rounded-xl p-4">
+              <BookmakerOdds odds={bookmakerOdds} compact={false} />
+            </div>
+          )}
 
           {/* Prediction */}
           <div className="bg-gradient-to-r from-amber-500/10 to-yellow-600/10 border border-amber-500/30 rounded-xl p-4">
@@ -65,14 +83,8 @@ export default function AnalysisDialog({ match, open, onOpenChange, historyStats
               <Target className="w-4 h-4 text-amber-400" />
               Pronostic
             </h3>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-center">
               <PredictionBadge prediction={match.prediction} confidence={match.confidence} size="lg" />
-              {match.odds && (
-                <div className="text-right">
-                  <p className="text-sm text-slate-400">Cote estimée</p>
-                  <p className="text-2xl font-bold text-amber-400">{match.odds.toFixed(2)}</p>
-                </div>
-              )}
             </div>
           </div>
 
