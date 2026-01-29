@@ -2,51 +2,76 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
-import { Trophy, Target, TrendingUp, Zap, Sparkles, RefreshCw } from "lucide-react";
+import { Trophy, Target, TrendingUp, Zap, Sparkles, RefreshCw, History, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import StatsCard from "@/components/StatsCard";
 import MatchCard from "@/components/MatchCard";
-import AddMatchDialog from "@/components/AddMatchDialog";
+import LeagueFilter from "@/components/LeagueFilter";
+import LoadMatchesButton from "@/components/LoadMatchesButton";
+import HistoryStats from "@/components/HistoryStats";
+import AnalysisDialog from "@/components/AnalysisDialog";
+import UpdateResultDialog from "@/components/UpdateResultDialog";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("upcoming");
+  const [selectedLeague, setSelectedLeague] = useState("all");
   const [analyzingMatchId, setAnalyzingMatchId] = useState(null);
+  const [selectedMatch, setSelectedMatch] = useState(null);
+  const [editingMatch, setEditingMatch] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: matches = [], isLoading } = useQuery({
     queryKey: ["matches"],
-    queryFn: () => base44.entities.Match.list("-match_date", 50)
+    queryFn: () => base44.entities.Match.list("-match_date", 100)
   });
 
-  const createMatchMutation = useMutation({
-    mutationFn: (data) => base44.entities.Match.create(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["matches"] })
+  const { data: history = [] } = useQuery({
+    queryKey: ["history"],
+    queryFn: () => base44.entities.PredictionHistory.list("-created_date", 200)
   });
 
   const updateMatchMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Match.update(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["matches"] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["matches"] });
+      setEditingMatch(null);
+    }
+  });
+
+  const createHistoryMutation = useMutation({
+    mutationFn: (data) => base44.entities.PredictionHistory.create(data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["history"] })
   });
 
   const analyzeMatch = async (match) => {
     setAnalyzingMatchId(match.id);
     
     try {
+      // Construire le contexte historique
+      const recentHistory = history.filter(h => h.result !== "pending").slice(0, 20);
+      const historyContext = recentHistory.length > 0 
+        ? `\n\nHistorique de nos derniers pronostics pour améliorer la précision:\n${recentHistory.map(h => 
+            `- ${h.home_team} vs ${h.away_team}: prédit ${h.prediction}, résultat ${h.result}`
+          ).join('\n')}`
+        : '';
+
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Tu es un expert en analyse de paris sportifs football. Analyse ce match et donne un pronostic:
+        prompt: `Tu es un expert en analyse de paris sportifs football. Analyse ce match et donne un pronostic précis:
 
 Match: ${match.home_team} vs ${match.away_team}
 Compétition: ${match.league}
 Date: ${match.match_date}
 
-Donne ton analyse détaillée et ton pronostic. Prends en compte:
-- La forme récente des équipes
-- Les confrontations directes
-- Les absences potentielles
-- Le contexte du match
+Recherche et analyse:
+- La forme actuelle des deux équipes (5 derniers matchs)
+- Les confrontations directes récentes
+- Les absences et blessures connues
+- Le contexte du match (enjeux, classement)
+- Les statistiques domicile/extérieur
+${historyContext}
 
-Sois précis et donne un niveau de confiance réaliste.`,
+Donne ton analyse détaillée et ton pronostic avec un niveau de confiance réaliste (entre 55 et 85% selon la certitude).`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -58,15 +83,15 @@ Sois précis et donne un niveau de confiance réaliste.`,
             },
             confidence: {
               type: "number",
-              description: "Niveau de confiance entre 50 et 95"
+              description: "Niveau de confiance entre 55 et 85"
             },
             odds: {
               type: "number",
-              description: "Cote estimée entre 1.20 et 5.00"
+              description: "Cote estimée entre 1.30 et 4.00"
             },
             analysis: {
               type: "string",
-              description: "Analyse détaillée en 2-3 phrases"
+              description: "Analyse détaillée en 3-4 phrases incluant forme récente, stats clés et justification du pronostic"
             }
           },
           required: ["prediction", "confidence", "odds", "analysis"]
@@ -77,11 +102,25 @@ Sois précis et donne un niveau de confiance réaliste.`,
         id: match.id,
         data: {
           prediction: result.prediction,
-          confidence: Math.min(95, Math.max(50, result.confidence)),
+          confidence: Math.min(85, Math.max(55, result.confidence)),
           odds: result.odds,
           analysis: result.analysis
         }
       });
+
+      // Sauvegarder dans l'historique
+      await createHistoryMutation.mutateAsync({
+        match_id: match.id,
+        home_team: match.home_team,
+        away_team: match.away_team,
+        league: match.league,
+        match_date: match.match_date,
+        prediction: result.prediction,
+        confidence: result.confidence,
+        odds: result.odds,
+        result: "pending"
+      });
+
     } catch (error) {
       console.error("Erreur analyse:", error);
     } finally {
@@ -89,12 +128,27 @@ Sois précis et donne un niveau de confiance réaliste.`,
     }
   };
 
-  // Calcul des stats
+  const handleUpdateResult = async (matchId, data) => {
+    await updateMatchMutation.mutateAsync({ id: matchId, data });
+    
+    // Mettre à jour l'historique correspondant
+    const historyEntry = history.find(h => h.match_id === matchId);
+    if (historyEntry) {
+      await base44.entities.PredictionHistory.update(historyEntry.id, {
+        final_score: data.final_score,
+        result: data.result
+      });
+      queryClient.invalidateQueries({ queryKey: ["history"] });
+    }
+  };
+
+  // Stats globales
+  const allAnalyzed = matches.filter(m => m.prediction);
   const stats = {
-    total: matches.length,
-    wins: matches.filter(m => m.result === "win").length,
-    losses: matches.filter(m => m.result === "loss").length,
-    pending: matches.filter(m => m.result === "pending").length
+    total: allAnalyzed.length,
+    wins: allAnalyzed.filter(m => m.result === "win").length,
+    losses: allAnalyzed.filter(m => m.result === "loss").length,
+    pending: allAnalyzed.filter(m => m.result === "pending").length
   };
   
   const winRate = stats.wins + stats.losses > 0 
@@ -103,10 +157,23 @@ Sois précis et donne un niveau de confiance réaliste.`,
 
   // Filtrage des matchs
   const filteredMatches = matches.filter(match => {
-    if (activeTab === "upcoming") return match.status === "upcoming" || !match.status;
-    if (activeTab === "finished") return match.status === "finished";
-    return true;
+    const statusMatch = activeTab === "all" 
+      || (activeTab === "upcoming" && (match.status === "upcoming" || !match.status))
+      || (activeTab === "finished" && match.status === "finished")
+      || (activeTab === "analyzed" && match.prediction);
+    
+    const leagueMatch = selectedLeague === "all" || match.league === selectedLeague;
+    
+    return statusMatch && leagueMatch;
   });
+
+  const historyStats = {
+    total: history.filter(h => h.result !== "pending").length,
+    wins: history.filter(h => h.result === "win").length,
+    winRate: history.filter(h => h.result !== "pending").length > 0
+      ? Math.round((history.filter(h => h.result === "win").length / history.filter(h => h.result !== "pending").length) * 100)
+      : 0
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -121,7 +188,7 @@ Sois précis et donne un niveau de confiance réaliste.`,
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-10"
+          className="text-center mb-8"
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 mb-4">
             <Sparkles className="w-4 h-4 text-amber-400" />
@@ -136,7 +203,7 @@ Sois précis et donne un niveau de confiance réaliste.`,
         </motion.div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <StatsCard
             icon={Target}
             label="Total Pronostics"
@@ -148,7 +215,6 @@ Sois précis et donne un niveau de confiance réaliste.`,
             label="Gagnés"
             value={stats.wins}
             color="green"
-            trend={winRate > 50 ? winRate - 50 : null}
           />
           <StatsCard
             icon={TrendingUp}
@@ -164,45 +230,64 @@ Sois précis et donne un niveau de confiance réaliste.`,
           />
         </div>
 
-        {/* Actions & Filters */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="bg-slate-800/50 border border-slate-700">
-              <TabsTrigger 
-                value="upcoming" 
-                className="data-[state=active]:bg-amber-500 data-[state=active]:text-black"
-              >
-                À venir
-              </TabsTrigger>
-              <TabsTrigger 
-                value="finished"
-                className="data-[state=active]:bg-amber-500 data-[state=active]:text-black"
-              >
-                Terminés
-              </TabsTrigger>
-              <TabsTrigger 
-                value="all"
-                className="data-[state=active]:bg-amber-500 data-[state=active]:text-black"
-              >
-                Tous
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+        {/* History Stats */}
+        {history.length > 0 && (
+          <HistoryStats history={history} />
+        )}
 
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              onClick={() => queryClient.invalidateQueries({ queryKey: ["matches"] })}
-              className="border-slate-600 text-slate-300 hover:bg-slate-800"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Actualiser
-            </Button>
-            <AddMatchDialog 
-              onAddMatch={createMatchMutation.mutateAsync}
-              isLoading={createMatchMutation.isPending}
-            />
+        {/* Actions */}
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="bg-slate-800/50 border border-slate-700">
+                <TabsTrigger 
+                  value="upcoming" 
+                  className="data-[state=active]:bg-amber-500 data-[state=active]:text-black"
+                >
+                  À venir
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="analyzed"
+                  className="data-[state=active]:bg-amber-500 data-[state=active]:text-black"
+                >
+                  Analysés
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="finished"
+                  className="data-[state=active]:bg-amber-500 data-[state=active]:text-black"
+                >
+                  Terminés
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="all"
+                  className="data-[state=active]:bg-amber-500 data-[state=active]:text-black"
+                >
+                  Tous
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={() => queryClient.invalidateQueries({ queryKey: ["matches"] })}
+                className="border-slate-600 text-slate-300 hover:bg-slate-800"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Actualiser
+              </Button>
+              <LoadMatchesButton 
+                existingMatches={matches}
+                onMatchesLoaded={() => queryClient.invalidateQueries({ queryKey: ["matches"] })}
+              />
+            </div>
           </div>
+
+          {/* League Filter */}
+          <LeagueFilter 
+            selectedLeague={selectedLeague} 
+            onLeagueChange={setSelectedLeague}
+          />
         </div>
 
         {/* Matches Grid */}
@@ -224,11 +309,11 @@ Sois précis et donne un niveau de confiance réaliste.`,
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">Aucun match</h3>
             <p className="text-slate-400 mb-6">
-              Ajoutez votre premier match pour obtenir une analyse IA
+              Cliquez sur "Charger les matchs" pour récupérer les prochains matchs
             </p>
-            <AddMatchDialog 
-              onAddMatch={createMatchMutation.mutateAsync}
-              isLoading={createMatchMutation.isPending}
+            <LoadMatchesButton 
+              existingMatches={matches}
+              onMatchesLoaded={() => queryClient.invalidateQueries({ queryKey: ["matches"] })}
             />
           </motion.div>
         ) : (
@@ -238,13 +323,25 @@ Sois précis et donne un niveau de confiance réaliste.`,
                 key={match.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
+                transition={{ delay: index * 0.03 }}
+                className="relative"
               >
                 <MatchCard
                   match={match}
                   onAnalyze={analyzeMatch}
                   isAnalyzing={analyzingMatchId === match.id}
+                  onViewDetails={(m) => setSelectedMatch(m)}
                 />
+                {match.prediction && match.result === "pending" && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setEditingMatch(match)}
+                    className="absolute top-3 left-3 text-slate-400 hover:text-white p-1.5 h-auto"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </Button>
+                )}
               </motion.div>
             ))}
           </div>
@@ -263,6 +360,22 @@ Sois précis et donne un niveau de confiance réaliste.`,
           </p>
         </motion.div>
       </div>
+
+      {/* Dialogs */}
+      <AnalysisDialog
+        match={selectedMatch}
+        open={!!selectedMatch}
+        onOpenChange={(open) => !open && setSelectedMatch(null)}
+        historyStats={historyStats}
+      />
+
+      <UpdateResultDialog
+        match={editingMatch}
+        open={!!editingMatch}
+        onOpenChange={(open) => !open && setEditingMatch(null)}
+        onUpdate={handleUpdateResult}
+        isLoading={updateMatchMutation.isPending}
+      />
     </div>
   );
 }

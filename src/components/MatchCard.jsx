@@ -1,18 +1,18 @@
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar, Clock, TrendingUp, Sparkles, CheckCircle2, XCircle } from "lucide-react";
+import { Calendar, Clock, TrendingUp, Sparkles, CheckCircle2, XCircle, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PredictionBadge from "./PredictionBadge";
 import { Button } from "@/components/ui/button";
 
-export default function MatchCard({ match, onAnalyze, isAnalyzing }) {
+export default function MatchCard({ match, onAnalyze, isAnalyzing, onViewDetails }) {
   const matchDate = new Date(match.match_date);
   
   const getResultBadge = () => {
     if (match.result === "win") {
       return (
-        <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/50">
+        <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/50 z-10">
           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
           <span className="text-xs font-semibold text-emerald-400">Gagné</span>
         </div>
@@ -20,13 +20,27 @@ export default function MatchCard({ match, onAnalyze, isAnalyzing }) {
     }
     if (match.result === "loss") {
       return (
-        <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/20 border border-red-500/50">
+        <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/20 border border-red-500/50 z-10">
           <XCircle className="w-3.5 h-3.5 text-red-400" />
           <span className="text-xs font-semibold text-red-400">Perdu</span>
         </div>
       );
     }
     return null;
+  };
+
+  const getLeagueEmoji = () => {
+    const emojis = {
+      "Ligue 1": "🇫🇷",
+      "Premier League": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+      "La Liga": "🇪🇸",
+      "Serie A": "🇮🇹",
+      "Bundesliga": "🇩🇪",
+      "Ligue des Champions": "⭐",
+      "Champions League": "⭐",
+      "Europa League": "🏆"
+    };
+    return emojis[match.league] || "⚽";
   };
 
   return (
@@ -48,7 +62,8 @@ export default function MatchCard({ match, onAnalyze, isAnalyzing }) {
       
       {/* League & Date */}
       <div className="flex items-center justify-between mb-4">
-        <span className="px-3 py-1 rounded-full bg-slate-700/50 text-xs font-medium text-slate-300">
+        <span className="px-3 py-1 rounded-full bg-slate-700/50 text-xs font-medium text-slate-300 flex items-center gap-1.5">
+          <span>{getLeagueEmoji()}</span>
           {match.league}
         </span>
         <div className="flex items-center gap-3 text-xs text-slate-400">
@@ -107,6 +122,18 @@ export default function MatchCard({ match, onAnalyze, isAnalyzing }) {
             <p className="text-xs text-slate-400 text-center line-clamp-2 mt-2">
               {match.analysis}
             </p>
+          )}
+
+          {onViewDetails && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onViewDetails(match)}
+              className="w-full text-slate-400 hover:text-white mt-2"
+            >
+              Voir l'analyse complète
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
           )}
         </div>
       ) : (
