@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
-import { Trophy, Target, TrendingUp, Zap, Sparkles, RefreshCw, Settings } from "lucide-react";
+import { Trophy, Target, TrendingUp, Zap, Sparkles, RefreshCw, Settings, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import StatsCard from "@/components/StatsCard";
@@ -15,6 +15,10 @@ import UpdateResultDialog from "@/components/UpdateResultDialog";
 import LiveMatchCard from "@/components/LiveMatchCard";
 import LiveAnalysisDialog from "@/components/LiveAnalysisDialog";
 import UpdateLogosButton from "@/components/UpdateLogosButton";
+import PremiumBadge from "@/components/PremiumBadge";
+import SubscriptionGate from "@/components/SubscriptionGate";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -25,6 +29,26 @@ export default function Home() {
   const [refreshingLiveId, setRefreshingLiveId] = useState(null);
   const [selectedLiveMatch, setSelectedLiveMatch] = useState(null);
   const queryClient = useQueryClient();
+
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const { data: subscription } = useQuery({
+    queryKey: ['subscription', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return null;
+      const subs = await base44.entities.Subscription.filter({ 
+        user_email: user.email,
+        status: "active"
+      });
+      return subs[0] || null;
+    },
+    enabled: !!user?.email
+  });
+
+  const isPremium = subscription && subscription.plan !== "free";
 
   const { data: matches = [], isLoading } = useQuery({
     queryKey: ["matches"],
@@ -481,18 +505,23 @@ Donne une analyse courte et percutante du match en cours.`,
   const liveMatches = matches.filter(m => m.status === "live");
   
   // Filtrage des matchs
-  const filteredMatches = matches.filter(match => {
+  let filteredMatches = matches.filter(match => {
     if (match.status === "live") return false; // Les lives sont affichés séparément
-    
+
     const statusMatch = activeTab === "all" 
       || (activeTab === "upcoming" && (match.status === "upcoming" || !match.status))
       || (activeTab === "finished" && match.status === "finished")
       || (activeTab === "analyzed" && match.prediction);
-    
+
     const leagueMatch = selectedLeague === "all" || match.league === selectedLeague;
-    
+
     return statusMatch && leagueMatch;
   });
+
+  // Limiter à 3 matchs pour les utilisateurs gratuits
+  if (!isPremium && activeTab === "upcoming") {
+    filteredMatches = filteredMatches.slice(0, 3);
+  }
 
   const historyStats = {
     total: history.filter(h => h.result !== "pending").length,
@@ -521,12 +550,22 @@ Donne une analyse courte et percutante du match en cours.`,
             <Sparkles className="w-4 h-4 text-amber-400" />
             <span className="text-sm font-medium text-amber-400">Propulsé par l'IA</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 tracking-tight">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 tracking-tight flex items-center justify-center gap-3">
             Prono<span className="text-amber-400">Foot</span> IA
+            {isPremium && <PremiumBadge size="md" />}
           </h1>
           <p className="text-slate-400 text-lg max-w-xl mx-auto">
             Analyse intelligente avec cotes Winamax, Betclic & Parions Sport
           </p>
+          
+          {!isPremium && (
+            <Link to={createPageUrl("Pricing")}>
+              <Button className="mt-4 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-black font-bold">
+                <Crown className="w-4 h-4 mr-2" />
+                Passer Premium - Accès illimité
+              </Button>
+            </Link>
+          )}
         </motion.div>
 
         {/* Stats Cards */}
@@ -558,8 +597,12 @@ Donne une analyse courte et percutante du match en cours.`,
         </div>
 
         {/* History Stats */}
-        {history.length > 0 && (
-          <HistoryStats history={history} />
+        {isPremium ? (
+          history.length > 0 && <HistoryStats history={history} />
+        ) : (
+          <SubscriptionGate isPremium={false} feature="l'historique complet">
+            <div className="h-32" />
+          </SubscriptionGate>
         )}
 
         {/* Actions */}
@@ -685,34 +728,52 @@ Donne une analyse courte et percutante du match en cours.`,
             />
           </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredMatches.map((match, index) => (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredMatches.map((match, index) => (
+                <motion.div
+                  key={match.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.03 }}
+                  className="relative"
+                >
+                  <MatchCard
+                    match={match}
+                    onAnalyze={analyzeMatch}
+                    isAnalyzing={analyzingMatchId === match.id}
+                    onViewDetails={(m) => setSelectedMatch(m)}
+                  />
+                  {match.prediction && match.result === "pending" && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setEditingMatch(match)}
+                      className="absolute top-3 left-3 text-slate-400 hover:text-white p-1.5 h-auto"
+                    >
+                      <Settings className="w-4 h-4" />
+                    </Button>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Premium upgrade prompt for free users */}
+            {!isPremium && activeTab === "upcoming" && matches.filter(m => m.status === "upcoming" || !m.status).length > 3 && (
               <motion.div
-                key={match.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.03 }}
-                className="relative"
+                className="mt-8"
               >
-                <MatchCard
-                  match={match}
-                  onAnalyze={analyzeMatch}
-                  isAnalyzing={analyzingMatchId === match.id}
-                  onViewDetails={(m) => setSelectedMatch(m)}
-                />
-                {match.prediction && match.result === "pending" && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setEditingMatch(match)}
-                    className="absolute top-3 left-3 text-slate-400 hover:text-white p-1.5 h-auto"
-                  >
-                    <Settings className="w-4 h-4" />
-                  </Button>
-                )}
+                <SubscriptionGate 
+                  isPremium={false}
+                  feature="tous les matchs et pronostics"
+                >
+                  <div className="h-40" />
+                </SubscriptionGate>
               </motion.div>
-            ))}
-          </div>
+            )}
+          </>
         )}
 
         {/* Footer */}

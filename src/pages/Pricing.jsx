@@ -28,6 +28,23 @@ export default function Pricing() {
 
   const isPremium = subscription && subscription.plan !== "free";
 
+  const handleSubscribe = async (plan) => {
+    if (window.self !== window.top) {
+      alert("Le paiement doit s'effectuer depuis l'application publiée. Veuillez ouvrir l'app dans un nouvel onglet.");
+      return;
+    }
+
+    try {
+      const response = await base44.functions.invoke('createCheckout', { plan });
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      }
+    } catch (error) {
+      console.error("Erreur checkout:", error);
+      alert("Erreur lors de la création du paiement. Veuillez réessayer.");
+    }
+  };
+
   const plans = [
     {
       name: "Gratuit",
@@ -42,7 +59,8 @@ export default function Pricing() {
       ],
       limitations: true,
       buttonText: "Plan actuel",
-      buttonVariant: "outline"
+      buttonVariant: "outline",
+      planKey: null
     },
     {
       name: "Premium",
@@ -62,7 +80,8 @@ export default function Pricing() {
       ],
       highlighted: true,
       buttonText: isPremium ? "Abonnement actif" : "Devenir Premium",
-      buttonVariant: "default"
+      buttonVariant: "default",
+      planKey: billingPeriod
     }
   ];
 
@@ -164,6 +183,7 @@ export default function Pricing() {
               </div>
 
               <Button
+                onClick={() => plan.planKey && handleSubscribe(plan.planKey)}
                 disabled={plan.limitations || isPremium}
                 className={`w-full mb-6 ${
                   plan.highlighted
