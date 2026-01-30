@@ -6,6 +6,8 @@ import NotificationBell from "@/components/NotificationBell";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useEffect } from "react";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import OfflineIndicator from "@/components/OfflineIndicator";
 
 export default function Layout({ children }) {
   const location = useLocation();
@@ -35,8 +37,10 @@ export default function Layout({ children }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <style>{`
+    <ErrorBoundary>
+      <div className="min-h-screen bg-slate-950">
+        <OfflineIndicator />
+        <style>{`
         :root {
           --background: 222.2 84% 4.9%;
           --foreground: 210 40% 98%;
@@ -122,5 +126,6 @@ export default function Layout({ children }) {
         </div>
       </nav>
     </div>
+    </ErrorBoundary>
   );
 }
