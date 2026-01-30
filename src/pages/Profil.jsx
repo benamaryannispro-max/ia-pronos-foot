@@ -132,6 +132,13 @@ export default function Profil() {
           </CardContent>
         </Card>
 
+        {/* Équipes favorites */}
+        {isPremium && user && (
+          <div className="mb-6">
+            <FavoriteTeamsManager userEmail={user.email} />
+          </div>
+        )}
+
         {/* Gamification */}
         {userStats && (
           <>
