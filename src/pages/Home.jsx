@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
@@ -230,6 +230,115 @@ ${historyContext}
       queryClient.invalidateQueries({ queryKey: ["history"] });
     }
   };
+
+  // Fonction pour mettre à jour automatiquement les résultats
+  const autoUpdateResults = async () => {
+    const now = new Date();
+    
+    // Trouver les matchs qui devraient être terminés (> 2h après l'heure du match)
+    const matchesToCheck = matches.filter(match => {
+      if (match.status === "finished" || !match.prediction) return false;
+      
+      const matchDate = new Date(match.match_date);
+      const twoHoursAfterMatch = new Date(matchDate.getTime() + 2 * 60 * 60 * 1000);
+      
+      return now > twoHoursAfterMatch;
+    });
+
+    for (const match of matchesToCheck) {
+      try {
+        // Récupérer le résultat via l'IA
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `Récupère le score final du match de football suivant:
+          
+${match.home_team} vs ${match.away_team}
+Date: ${match.match_date}
+Compétition: ${match.league}
+
+Je cherche uniquement le score final officiel du match.
+Si le match n'a pas encore eu lieu ou n'est pas terminé, retourne "not_finished".`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              status: {
+                type: "string",
+                enum: ["finished", "not_finished"],
+                description: "Statut du match"
+              },
+              home_score: {
+                type: "number",
+                description: "Buts de l'équipe à domicile"
+              },
+              away_score: {
+                type: "number",
+                description: "Buts de l'équipe à l'extérieur"
+              }
+            },
+            required: ["status"]
+          }
+        });
+
+        if (result.status === "finished" && result.home_score !== undefined && result.away_score !== undefined) {
+          const finalScore = `${result.home_score}_${result.away_score}`;
+          
+          // Déterminer le résultat du pronostic
+          let matchResult = "loss";
+          
+          if (match.prediction === "home_win" && result.home_score > result.away_score) {
+            matchResult = "win";
+          } else if (match.prediction === "away_win" && result.away_score > result.home_score) {
+            matchResult = "win";
+          } else if (match.prediction === "draw" && result.home_score === result.away_score) {
+            matchResult = "win";
+          } else if (match.prediction === "over_2.5" && (result.home_score + result.away_score) > 2.5) {
+            matchResult = "win";
+          } else if (match.prediction === "under_2.5" && (result.home_score + result.away_score) < 2.5) {
+            matchResult = "win";
+          } else if (match.prediction === "btts_yes" && result.home_score > 0 && result.away_score > 0) {
+            matchResult = "win";
+          } else if (match.prediction === "btts_no" && (result.home_score === 0 || result.away_score === 0)) {
+            matchResult = "win";
+          }
+
+          // Mettre à jour le match
+          await base44.entities.Match.update(match.id, {
+            status: "finished",
+            final_score: finalScore,
+            result: matchResult
+          });
+
+          // Mettre à jour l'historique
+          const historyEntry = history.find(h => h.match_id === match.id);
+          if (historyEntry) {
+            await base44.entities.PredictionHistory.update(historyEntry.id, {
+              final_score: finalScore,
+              result: matchResult
+            });
+          }
+        }
+      } catch (error) {
+        console.error(`Erreur mise à jour auto pour ${match.home_team} vs ${match.away_team}:`, error);
+      }
+    }
+
+    // Rafraîchir les données
+    if (matchesToCheck.length > 0) {
+      queryClient.invalidateQueries({ queryKey: ["matches"] });
+      queryClient.invalidateQueries({ queryKey: ["history"] });
+    }
+  };
+
+  // Vérifier automatiquement toutes les 5 minutes
+  useEffect(() => {
+    autoUpdateResults(); // Vérification au chargement
+    
+    const interval = setInterval(() => {
+      autoUpdateResults();
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => clearInterval(interval);
+  }, [matches, history]);
 
   const refreshLiveMatch = async (match) => {
     setRefreshingLiveId(match.id);
