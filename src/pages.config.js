@@ -55,6 +55,7 @@ import Matchs from './pages/Matchs';
 import MesPronostics from './pages/MesPronostics';
 import Pricing from './pages/Pricing';
 import Profil from './pages/Profil';
+import HistoriqueMatchs from './pages/HistoriqueMatchs';
 import __Layout from './Layout.jsx';
 
 
@@ -67,6 +68,7 @@ export const PAGES = {
     "MesPronostics": MesPronostics,
     "Pricing": Pricing,
     "Profil": Profil,
+    "HistoriqueMatchs": HistoriqueMatchs,
 }
 
 export const pagesConfig = {

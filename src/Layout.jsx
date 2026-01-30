@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, Trophy, BarChart3, User, Award } from "lucide-react";
+import { Home, Trophy, BarChart3, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import NotificationBell from "@/components/NotificationBell";
 import { useQuery } from "@tanstack/react-query";
@@ -28,7 +28,7 @@ export default function Layout({ children }) {
   const navItems = [
     { name: "Accueil", icon: Home, path: "" },
     { name: "Matchs", icon: Trophy, path: "Matchs" },
-    { name: "Classement", icon: Award, path: "Classement" },
+    { name: "Historique", icon: BarChart3, path: "HistoriqueMatchs" },
     { name: "Profil", icon: User, path: "Profil" }
   ];
 
