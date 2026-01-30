@@ -1,16 +1,18 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
-import { Trophy, Target, TrendingUp, Zap, Crown } from "lucide-react";
+import { Trophy, Target, TrendingUp, Zap } from "lucide-react";
 import { format } from "date-fns";
 import StatsCard from "@/components/StatsCard";
 import HistoryStats from "@/components/HistoryStats";
 import SubscriptionGate from "@/components/SubscriptionGate";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
-import { Button } from "@/components/ui/button";
+import AdvancedStats from "@/components/AdvancedStats";
+import HistoryFilters from "@/components/HistoryFilters";
 
 export default function MesPronostics() {
+  const [filters, setFilters] = useState({ league: "all", predictionType: "all", dateRange: "all" });
+
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -42,12 +44,35 @@ export default function MesPronostics() {
     gcTime: 15 * 60 * 1000
   });
 
-  const totalPredictions = history.length;
-  const wins = history.filter(h => h.result === "win").length;
-  const losses = history.filter(h => h.result === "loss").length;
-  const pending = history.filter(h => h.result === "pending").length;
+  const applyFilters = (data) => {
+    return data.filter(h => {
+      const leagueMatch = filters.league === "all" || h.league === filters.league;
+      const typeMatch = filters.predictionType === "all" || h.prediction === filters.predictionType;
+      
+      let dateMatch = true;
+      if (filters.dateRange !== "all") {
+        const date = new Date(h.created_date);
+        const now = new Date();
+        const daysDiff = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+        
+        if (filters.dateRange === "7days") dateMatch = daysDiff <= 7;
+        else if (filters.dateRange === "30days") dateMatch = daysDiff <= 30;
+        else if (filters.dateRange === "90days") dateMatch = daysDiff <= 90;
+      }
+      
+      return leagueMatch && typeMatch && dateMatch;
+    });
+  };
+
+  const filteredHistory = applyFilters(history);
+  const allLeagues = [...new Set(history.map(h => h.league))];
+
+  const totalPredictions = filteredHistory.length;
+  const wins = filteredHistory.filter(h => h.result === "win").length;
+  const losses = filteredHistory.filter(h => h.result === "loss").length;
+  const pending = filteredHistory.filter(h => h.result === "pending").length;
   const winRate = wins + losses > 0 ? Math.round((wins / (wins + losses)) * 100) : 0;
-  const totalProfit = history.reduce((acc, h) => acc + (h.profit || 0), 0);
+  const totalProfit = filteredHistory.reduce((acc, h) => acc + (h.profit || 0), 0);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -103,20 +128,32 @@ export default function MesPronostics() {
             <Trophy className="w-5 h-5 text-purple-400" />
             <h2 className="text-xl font-bold text-white">Statistiques Avancées Premium</h2>
           </div>
-          <AdvancedStats history={history} />
+          <AdvancedStats history={filteredHistory} />
+        </motion.div>
+      )}
+
+      {/* Filtres */}
+      {isPremium && history.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="mb-6"
+        >
+          <HistoryFilters filters={filters} onFilterChange={setFilters} leagues={allLeagues} />
         </motion.div>
       )}
 
       {/* Historique détaillé */}
       {isPremium ? (
-        history.length > 0 ? (
+        filteredHistory.length > 0 ? (
           <>
-            <HistoryStats history={history} />
+            <HistoryStats history={filteredHistory} />
             
             {/* Liste complète de l'historique */}
             <div className="mt-8 space-y-3">
               <h3 className="text-xl font-bold text-white mb-4">Historique complet</h3>
-              {history.map((entry) => (
+              {filteredHistory.map((entry) => (
                 <div
                   key={entry.id}
                   className="bg-slate-800/40 border border-slate-700/30 rounded-xl p-4"

@@ -12,6 +12,7 @@ import { fr } from "date-fns/locale";
 import StreakDisplay from "@/components/StreakDisplay";
 import BadgeDisplay from "@/components/BadgeDisplay";
 import VIPBadge from "@/components/VIPBadge";
+import FavoriteTeamsManager from "@/components/FavoriteTeamsManager";
 
 export default function Profil() {
   const { data: user } = useQuery({
