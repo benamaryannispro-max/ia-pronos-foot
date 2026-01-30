@@ -179,9 +179,10 @@ Analyse courte et pronostic précis.`,
       await base44.entities.Notification.create({
         user_email: user.email,
         type: "new_prediction",
-        title: "⚽ Nouveau prono disponible !",
+        title: match.is_vip ? "👑 Prono VIP disponible !" : "⚽ Nouveau prono disponible !",
         message: `${match.home_team} vs ${match.away_team}`,
-        match_id: match.id
+        match_id: match.id,
+        priority: match.is_vip ? "high" : "medium"
       });
 
     } catch (error) {
@@ -210,7 +211,8 @@ Analyse courte et pronostic précis.`,
           user_email: user.email,
           type: "prediction_result",
           title: data.result === "win" ? "🎯 Prono gagné !" : "Prono perdu",
-          message: `${match.home_team} vs ${match.away_team} - ${data.final_score}`
+          message: `${match.home_team} vs ${match.away_team} - ${data.final_score}`,
+          priority: data.result === "win" ? "high" : "medium"
         });
       }
     }
@@ -270,6 +272,8 @@ Recherche temps réel:
   
   let filteredMatches = matches.filter(match => {
     if (match.status === "live") return false;
+    
+    if (match.is_vip && !isPremium) return false;
     
     const statusMatch = activeTab === "all" 
       || (activeTab === "upcoming" && (match.status === "upcoming" || !match.status))

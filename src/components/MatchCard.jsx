@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar, Clock, Sparkles, CheckCircle2, XCircle, ChevronRight } from "lucide-react";
+import { Calendar, Clock, Sparkles, CheckCircle2, XCircle, ChevronRight, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PredictionBadge from "./PredictionBadge";
 import TeamLogo from "./TeamLogo";
@@ -54,7 +54,14 @@ export default function MatchCard({ match, onAnalyze, isAnalyzing, onViewDetails
     >
       {/* Glow effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-      
+
+      {match.is_vip && (
+        <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg z-10">
+          <Crown className="w-3 h-3 text-white" />
+          <span className="text-xs font-bold text-white">VIP</span>
+        </div>
+      )}
+
       {getResultBadge()}
       
       {/* League & Date */}

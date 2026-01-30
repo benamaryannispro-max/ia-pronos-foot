@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import StreakDisplay from "@/components/StreakDisplay";
 import BadgeDisplay from "@/components/BadgeDisplay";
+import VIPBadge from "@/components/VIPBadge";
 
 export default function Profil() {
   const { data: user } = useQuery({
@@ -69,7 +70,7 @@ export default function Profil() {
           <CardHeader>
             <CardTitle className="text-white flex items-center justify-between">
               Mon Profil
-              {isPremium && <PremiumBadge size="sm" />}
+              {isPremium && <VIPBadge />}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">

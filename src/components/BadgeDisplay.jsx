@@ -2,6 +2,7 @@ import { Trophy, Target, Flame, Star, Crown, Zap, Award, TrendingUp } from "luci
 import { motion } from "framer-motion";
 
 const BADGES = {
+  "premium_vip": { icon: Crown, label: "VIP Premium", color: "from-purple-500 to-pink-500", tier: "vip", description: "Abonné" },
   "first_prediction": { icon: Star, label: "Première Étoile", color: "from-blue-500 to-cyan-500", tier: "bronze", description: "1er prono" },
   "5_predictions": { icon: Target, label: "Débutant", color: "from-amber-600 to-orange-600", tier: "bronze", description: "5 pronos" },
   "20_predictions": { icon: Trophy, label: "Régulier", color: "from-slate-400 to-slate-500", tier: "silver", description: "20 pronos" },

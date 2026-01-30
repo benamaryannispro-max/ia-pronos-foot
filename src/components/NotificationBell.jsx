@@ -19,7 +19,11 @@ export default function NotificationBell({ userEmail }) {
         "-created_date",
         50
       );
-      return notifs;
+      return notifs.sort((a, b) => {
+        if (a.priority === "high" && b.priority !== "high") return -1;
+        if (a.priority !== "high" && b.priority === "high") return 1;
+        return new Date(b.created_date) - new Date(a.created_date);
+      });
     },
     enabled: !!userEmail,
     refetchInterval: 30000
