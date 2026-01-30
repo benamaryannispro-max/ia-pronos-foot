@@ -14,6 +14,7 @@ import AnalysisDialog from "@/components/AnalysisDialog";
 import UpdateResultDialog from "@/components/UpdateResultDialog";
 import LiveMatchCard from "@/components/LiveMatchCard";
 import LiveAnalysisDialog from "@/components/LiveAnalysisDialog";
+import UpdateLogosButton from "@/components/UpdateLogosButton";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -602,6 +603,10 @@ Donne une analyse courte et percutante du match en cours.`,
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Actualiser
               </Button>
+              <UpdateLogosButton 
+                matches={matches}
+                onComplete={() => queryClient.invalidateQueries({ queryKey: ["matches"] })}
+              />
               <LoadMatchesButton 
                 existingMatches={matches}
                 onMatchesLoaded={() => queryClient.invalidateQueries({ queryKey: ["matches"] })}
