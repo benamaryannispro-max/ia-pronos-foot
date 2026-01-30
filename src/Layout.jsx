@@ -8,6 +8,7 @@ import { base44 } from "@/api/base44Client";
 import { useEffect } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import OfflineIndicator from "@/components/OfflineIndicator";
+import AgeVerificationBanner from "@/components/AgeVerificationBanner";
 
 export default function Layout({ children }) {
   const location = useLocation();
@@ -38,6 +39,7 @@ export default function Layout({ children }) {
 
   return (
     <ErrorBoundary>
+      <AgeVerificationBanner />
       <div className="min-h-screen bg-slate-950">
         <OfflineIndicator />
         <style>{`
@@ -86,10 +88,24 @@ export default function Layout({ children }) {
       </div>
 
       {/* Disclaimer */}
-      <div className="fixed bottom-16 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800/50 py-2 z-40">
-        <p className="text-center text-xs text-slate-500">
-          ⚠️ Pronostics non garantis • Pour divertissement uniquement • Jouez responsable
-        </p>
+      <div className="fixed bottom-16 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800/50 py-3 z-40">
+        <div className="max-w-7xl mx-auto px-4">
+          <p className="text-center text-xs text-slate-400 mb-1">
+            🔞 Réservé aux +18 ans • Application de divertissement uniquement
+          </p>
+          <p className="text-center text-xs text-slate-500">
+            Pronostics non garantis • Jouez responsable • <a href="tel:0974751313" className="underline hover:text-slate-400">Joueurs Info Service : 09 74 75 13 13</a>
+          </p>
+          <div className="flex justify-center gap-4 mt-2">
+            <Link to={createPageUrl("CGU")} className="text-xs text-slate-600 hover:text-cyan-400 transition-colors">
+              CGU
+            </Link>
+            <span className="text-slate-700">•</span>
+            <Link to={createPageUrl("Confidentialite")} className="text-xs text-slate-600 hover:text-cyan-400 transition-colors">
+              Confidentialité
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Bottom Navigation */}

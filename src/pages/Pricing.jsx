@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Check, Crown, Sparkles, Zap } from "lucide-react";
+import { Check, Crown, Sparkles, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -226,11 +226,22 @@ export default function Pricing() {
           transition={{ delay: 0.3 }}
           className="mt-12 max-w-3xl mx-auto"
         >
-          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 text-center">
-            <p className="text-sm text-slate-400 leading-relaxed">
-              ⚠️ Les pronostics sont générés par intelligence artificielle et ne sont pas garantis. 
-              Ce service est proposé à titre de divertissement uniquement. 
-              Pariez de manière responsable et dans la limite de vos moyens.
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6">
+            <div className="flex items-start gap-3 mb-4">
+              <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-red-300 font-semibold mb-2">
+                  🔞 Application réservée aux personnes majeures (18+)
+                </p>
+                <p className="text-red-200 text-sm leading-relaxed">
+                  Les pronostics sont générés par intelligence artificielle et ne constituent pas une garantie de résultat. 
+                  Ce service est proposé à titre de divertissement uniquement. 
+                  Le jeu peut être addictif. Jouez de manière responsable et dans la limite de vos moyens.
+                </p>
+              </div>
+            </div>
+            <p className="text-red-300 text-sm text-center font-semibold">
+              Aide au jeu : Joueurs Info Service 09 74 75 13 13 (appel non surtaxé)
             </p>
           </div>
         </motion.div>
