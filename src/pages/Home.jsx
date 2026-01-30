@@ -532,67 +532,74 @@ Donne une analyse courte et percutante du match en cours.`,
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      {/* Background effects */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
+    <div className="min-h-screen bg-slate-950 pb-12">
+      {/* Header sticky */}
+      <div className="border-b border-slate-800/50 bg-slate-900/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight flex items-center gap-3">
+              Prono<span className="text-cyan-400">Foot</span>
+              {isPremium && <PremiumBadge size="sm" />}
+            </h1>
+            
+            {!isPremium && (
+              <Link to={createPageUrl("Pricing")}>
+                <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold text-base px-6">
+                  <Crown className="w-5 h-5 mr-2" />
+                  Premium
+                </Button>
+              </Link>
+            )}
+          </div>
+        </div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 mb-4">
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            <span className="text-sm font-medium text-amber-400">Propulsé par l'IA</span>
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        {/* Admin Controls */}
+        {user?.role === 'admin' && (
+          <div className="flex gap-3 mb-6">
+            <LoadMatchesButton
+              existingMatches={matches}
+              onMatchesLoaded={() => queryClient.invalidateQueries({ queryKey: ["matches"] })}
+            />
+            <UpdateLogosButton
+              matches={matches}
+              onComplete={() => queryClient.invalidateQueries({ queryKey: ["matches"] })}
+            />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 tracking-tight flex items-center justify-center gap-3">
-            Prono<span className="text-amber-400">Foot</span> IA
-            {isPremium && <PremiumBadge size="md" />}
-          </h1>
-          <p className="text-slate-400 text-lg max-w-xl mx-auto">
-            Analyse intelligente avec cotes Winamax, Betclic & Parions Sport
-          </p>
-          
-          {!isPremium && (
-            <Link to={createPageUrl("Pricing")}>
-              <Button className="mt-4 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-black font-bold">
-                <Crown className="w-4 h-4 mr-2" />
-                Passer Premium - Accès illimité
-              </Button>
-            </Link>
-          )}
-        </motion.div>
+        )}
 
-        {/* Stats Cards */}
+        {/* Stats Cards simplifiées */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <StatsCard
-            icon={Target}
-            label="Total Pronostics"
-            value={stats.total}
-            color="gold"
-          />
-          <StatsCard
+            label="Total"
+            value={history.length}
             icon={Trophy}
+            bgColor="from-cyan-500/20 to-blue-500/20"
+            iconColor="text-cyan-400"
+          />
+          <StatsCard
             label="Gagnés"
-            value={stats.wins}
-            color="green"
+            value={history.filter(h => h.result === "win").length}
+            icon={Target}
+            bgColor="from-emerald-500/20 to-green-500/20"
+            iconColor="text-emerald-400"
           />
           <StatsCard
+            label="Réussite"
+            value={`${history.length > 0 ? Math.round((history.filter(h => h.result === "win").length / history.filter(h => h.result !== "pending").length) * 100) : 0}%`}
             icon={TrendingUp}
-            label="Taux de réussite"
-            value={`${winRate}%`}
-            color="blue"
+            bgColor="from-blue-500/20 to-indigo-500/20"
+            iconColor="text-blue-400"
           />
           <StatsCard
+            label="Profit"
+            value={`${history.reduce((acc, h) => acc + (h.profit || 0), 0) > 0 ? '+' : ''}${history.reduce((acc, h) => acc + (h.profit || 0), 0).toFixed(0)}€`}
             icon={Zap}
-            label="En attente"
-            value={stats.pending}
-            color="purple"
+            bgColor="from-cyan-500/20 to-teal-500/20"
+            iconColor="text-cyan-400"
+            trend={history.reduce((acc, h) => acc + (h.profit || 0), 0) > 0 ? "up" : "down"}
           />
         </div>
 
@@ -605,63 +612,20 @@ Donne une analyse courte et percutante du match en cours.`,
           </SubscriptionGate>
         )}
 
-        {/* Actions */}
-        <div className="flex flex-col gap-4 mb-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="bg-slate-800/50 border border-slate-700">
-                <TabsTrigger 
-                  value="upcoming" 
-                  className="data-[state=active]:bg-amber-500 data-[state=active]:text-black"
-                >
-                  À venir
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="analyzed"
-                  className="data-[state=active]:bg-amber-500 data-[state=active]:text-black"
-                >
-                  Analysés
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="finished"
-                  className="data-[state=active]:bg-amber-500 data-[state=active]:text-black"
-                >
-                  Terminés
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="all"
-                  className="data-[state=active]:bg-amber-500 data-[state=active]:text-black"
-                >
-                  Tous
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+        {/* Tabs simplifiés */}
+        <div className="mb-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="bg-slate-800/30 border border-slate-700/30 p-1">
+              <TabsTrigger value="upcoming" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">À venir</TabsTrigger>
+              <TabsTrigger value="analyzed" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">Analysés</TabsTrigger>
+              <TabsTrigger value="finished" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">Terminés</TabsTrigger>
+              <TabsTrigger value="all" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">Tous</TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={() => queryClient.invalidateQueries({ queryKey: ["matches"] })}
-                className="border-slate-600 text-slate-300 hover:bg-slate-800"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Actualiser
-              </Button>
-              <UpdateLogosButton 
-                matches={matches}
-                onComplete={() => queryClient.invalidateQueries({ queryKey: ["matches"] })}
-              />
-              <LoadMatchesButton 
-                existingMatches={matches}
-                onMatchesLoaded={() => queryClient.invalidateQueries({ queryKey: ["matches"] })}
-              />
-            </div>
+          <div className="mt-5">
+            <LeagueFilter onLeagueChange={setSelectedLeague} selectedLeague={selectedLeague} />
           </div>
-
-          {/* League Filter */}
-          <LeagueFilter 
-            selectedLeague={selectedLeague} 
-            onLeagueChange={setSelectedLeague}
-          />
         </div>
 
         {/* Live Matches Section */}
@@ -671,14 +635,11 @@ Donne une analyse courte et percutante du match en cours.`,
             animate={{ opacity: 1, y: 0 }}
             className="mb-8"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 border border-red-500/50">
-                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                <span className="font-bold text-red-400">PARIS LIVE</span>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-500/20 border-2 border-red-500/50">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+                <span className="font-bold text-red-400 text-base">EN DIRECT</span>
               </div>
-              <span className="text-sm text-slate-400">
-                {liveMatches.length} match{liveMatches.length > 1 ? 's' : ''} en cours
-              </span>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -706,7 +667,7 @@ Donne une analyse courte et percutante du match en cours.`,
           <div className="flex items-center justify-center py-20">
             <div className="flex items-center gap-3 text-slate-400">
               <RefreshCw className="w-5 h-5 animate-spin" />
-              <span>Chargement des matchs...</span>
+              <span>Chargement...</span>
             </div>
           </div>
         ) : filteredMatches.length === 0 ? (
@@ -715,17 +676,16 @@ Donne une analyse courte et percutante du match en cours.`,
             animate={{ opacity: 1 }}
             className="text-center py-20"
           >
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-slate-800 flex items-center justify-center">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-slate-800 flex items-center justify-center">
               <Target className="w-10 h-10 text-slate-600" />
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">Aucun match</h3>
-            <p className="text-slate-400 mb-6">
-              Cliquez sur "Charger les matchs" pour récupérer les prochains matchs
-            </p>
-            <LoadMatchesButton 
-              existingMatches={matches}
-              onMatchesLoaded={() => queryClient.invalidateQueries({ queryKey: ["matches"] })}
-            />
+            <h3 className="text-2xl font-bold text-white mb-6">Aucun match</h3>
+            {user?.role === 'admin' && (
+              <LoadMatchesButton 
+                existingMatches={matches}
+                onMatchesLoaded={() => queryClient.invalidateQueries({ queryKey: ["matches"] })}
+              />
+            )}
           </motion.div>
         ) : (
           <>
@@ -776,18 +736,6 @@ Donne une analyse courte et percutante du match en cours.`,
           </>
         )}
 
-        {/* Footer */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-center mt-16 pb-8"
-        >
-          <p className="text-xs text-slate-500">
-            ⚠️ Les pronostics sont générés par l'IA à titre informatif uniquement. 
-            Pariez de manière responsable.
-          </p>
-        </motion.div>
       </div>
 
       {/* Dialogs */}

@@ -1,36 +1,36 @@
 import { cn } from "@/lib/utils";
 
 const predictionLabels = {
-  "home_win": "Victoire Domicile",
-  "draw": "Match Nul",
-  "away_win": "Victoire Extérieur",
-  "over_2.5": "Plus de 2.5 buts",
-  "under_2.5": "Moins de 2.5 buts",
-  "btts_yes": "Les 2 équipes marquent",
-  "btts_no": "Les 2 ne marquent pas"
+  "home_win": "1",
+  "draw": "N",
+  "away_win": "2",
+  "over_2.5": "+2.5",
+  "under_2.5": "-2.5",
+  "btts_yes": "BTTS",
+  "btts_no": "No BTTS"
 };
 
 export default function PredictionBadge({ prediction, confidence, size = "md" }) {
   const getConfidenceColor = (conf) => {
-    if (conf >= 80) return "from-emerald-500/20 to-emerald-600/20 border-emerald-500/50 text-emerald-400";
-    if (conf >= 60) return "from-amber-500/20 to-amber-600/20 border-amber-500/50 text-amber-400";
-    return "from-slate-500/20 to-slate-600/20 border-slate-500/50 text-slate-400";
+    if (conf >= 75) return "from-emerald-500/20 to-green-500/20 border-emerald-500/50 text-emerald-400";
+    if (conf >= 60) return "from-cyan-500/20 to-blue-500/20 border-cyan-500/50 text-cyan-400";
+    return "from-slate-500/20 to-slate-600/20 border-slate-500/50 text-slate-300";
   };
 
   const sizeClasses = {
-    sm: "px-2 py-1 text-xs",
-    md: "px-3 py-1.5 text-sm",
-    lg: "px-4 py-2 text-base"
+    sm: "px-3 py-1.5 text-sm gap-2",
+    md: "px-4 py-2 text-base gap-2.5",
+    lg: "px-5 py-2.5 text-lg gap-3"
   };
 
   return (
     <div className={cn(
-      "inline-flex items-center gap-2 rounded-full border bg-gradient-to-r font-medium",
+      "inline-flex items-center rounded-xl border-2 bg-gradient-to-r font-bold",
       getConfidenceColor(confidence),
       sizeClasses[size]
     )}>
       <span>{predictionLabels[prediction] || prediction}</span>
-      <span className="font-bold">{confidence}%</span>
+      <span className="opacity-75">{confidence}%</span>
     </div>
   );
 }

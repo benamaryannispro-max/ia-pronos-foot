@@ -95,12 +95,7 @@ export default function MatchCard({ match, onAnalyze, isAnalyzing, onViewDetails
         </div>
       </div>
 
-      {/* Bookmaker Odds */}
-      {hasOdds && (
-        <div className="mb-4">
-          <BookmakerOdds odds={bookmakerOdds} compact={true} />
-        </div>
-      )}
+
 
       {/* Prediction */}
       {match.prediction ? (
