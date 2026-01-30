@@ -28,6 +28,8 @@ export default function Matchs() {
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000
   });
 
   const { data: subscription } = useQuery({
@@ -40,19 +42,25 @@ export default function Matchs() {
       });
       return subs[0] || null;
     },
-    enabled: !!user?.email
+    enabled: !!user?.email,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const isPremium = subscription && subscription.plan !== "free";
 
   const { data: matches = [], isLoading } = useQuery({
     queryKey: ["matches"],
-    queryFn: () => base44.entities.Match.list("-match_date", 100)
+    queryFn: () => base44.entities.Match.list("-match_date", 100),
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
   });
 
   const { data: history = [] } = useQuery({
     queryKey: ["history"],
-    queryFn: () => base44.entities.PredictionHistory.list("-created_date", 200)
+    queryFn: () => base44.entities.PredictionHistory.list("-created_date", 200),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const updateMatchMutation = useMutation({

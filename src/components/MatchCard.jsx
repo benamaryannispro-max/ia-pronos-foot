@@ -42,9 +42,9 @@ export default function MatchCard({ match, onAnalyze, isAnalyzing, onViewDetails
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ scale: 1.02 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -4 }}
       transition={{ duration: 0.2 }}
       className={cn(
         "relative overflow-hidden rounded-2xl border border-slate-700/30",

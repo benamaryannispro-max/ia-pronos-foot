@@ -11,6 +11,8 @@ export default function Pricing() {
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000
   });
 
   const { data: subscription } = useQuery({
@@ -23,7 +25,9 @@ export default function Pricing() {
       });
       return subs[0] || null;
     },
-    enabled: !!user?.email
+    enabled: !!user?.email,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000
   });
 
   const isPremium = subscription && subscription.plan !== "free";
