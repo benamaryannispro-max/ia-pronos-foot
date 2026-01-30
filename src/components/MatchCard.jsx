@@ -47,55 +47,51 @@ export default function MatchCard({ match, onAnalyze, isAnalyzing, onViewDetails
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-slate-700/50",
-        "bg-gradient-to-br from-slate-900 via-slate-800/50 to-slate-900",
-        "backdrop-blur-xl p-5 group"
+        "relative overflow-hidden rounded-2xl border border-slate-700/30",
+        "bg-slate-800/40 backdrop-blur-xl p-6 group",
+        "hover:border-cyan-500/50 transition-all duration-300"
       )}
     >
       {/* Glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 via-transparent to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
       
       {getResultBadge()}
       
       {/* League & Date */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="px-3 py-1.5 rounded-full bg-slate-700/50 text-xs font-medium text-slate-300">
-          <LeagueLogo league={match.league} size="xs" showName={true} />
-        </div>
-        <div className="flex items-center gap-3 text-xs text-slate-400">
-          <span className="flex items-center gap-1">
-            <Calendar className="w-3.5 h-3.5" />
-            {format(matchDate, "dd MMM", { locale: fr })}
-          </span>
-          <span className="flex items-center gap-1">
-            <Clock className="w-3.5 h-3.5" />
-            {format(matchDate, "HH:mm")}
-          </span>
-        </div>
+      {/* Date et heure */}
+      <div className="flex items-center justify-center gap-3 text-xs text-slate-400 mb-5">
+        <span className="flex items-center gap-1">
+          <Calendar className="w-3.5 h-3.5" />
+          {format(matchDate, "dd MMM", { locale: fr })}
+        </span>
+        <span className="flex items-center gap-1">
+          <Clock className="w-3.5 h-3.5" />
+          {format(matchDate, "HH:mm")}
+        </span>
       </div>
 
-      {/* Teams */}
-      <div className="flex items-center justify-between mb-5">
+      {/* Teams avec logos plus grands */}
+      <div className="flex items-center justify-between mb-6">
         <div className="flex-1 text-center">
-          <div className="mx-auto mb-2">
-            <TeamLogo teamName={match.home_team} size="md" logoUrl={match.logo_home} />
+          <div className="mx-auto mb-3">
+            <TeamLogo teamName={match.home_team} size="lg" logoUrl={match.logo_home} />
           </div>
-          <p className="font-semibold text-white text-sm">{match.home_team}</p>
+          <p className="font-bold text-white text-base">{match.home_team}</p>
         </div>
 
-        <div className="px-4">
+        <div className="px-6">
           {match.final_score ? (
-            <div className="text-2xl font-bold text-white">{match.final_score}</div>
+            <div className="text-3xl font-bold text-white">{match.final_score}</div>
           ) : (
-            <div className="text-slate-500 font-medium">VS</div>
+            <div className="text-slate-600 font-bold text-lg">VS</div>
           )}
         </div>
 
         <div className="flex-1 text-center">
-          <div className="mx-auto mb-2">
-            <TeamLogo teamName={match.away_team} size="md" logoUrl={match.logo_away} />
+          <div className="mx-auto mb-3">
+            <TeamLogo teamName={match.away_team} size="lg" logoUrl={match.logo_away} />
           </div>
-          <p className="font-semibold text-white text-sm">{match.away_team}</p>
+          <p className="font-bold text-white text-base">{match.away_team}</p>
         </div>
       </div>
 
@@ -109,34 +105,19 @@ export default function MatchCard({ match, onAnalyze, isAnalyzing, onViewDetails
       {/* Prediction */}
       {match.prediction ? (
         <div className="space-y-3">
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center mb-3">
             <PredictionBadge prediction={match.prediction} confidence={match.confidence} />
           </div>
-          
-          {match.analysis && (() => {
-            let analysisText;
-            try {
-              const parsed = JSON.parse(match.analysis);
-              analysisText = parsed.analysis;
-            } catch {
-              analysisText = match.analysis;
-            }
-            return (
-              <p className="text-xs text-slate-400 text-center line-clamp-2 mt-2">
-                {analysisText}
-              </p>
-            );
-          })()}
 
           {onViewDetails && (
             <Button
-              variant="ghost"
-              size="sm"
+              variant="outline"
+              size="lg"
               onClick={() => onViewDetails(match)}
-              className="w-full text-slate-400 hover:text-white mt-2"
+              className="w-full text-cyan-400 hover:text-white border-cyan-500/30 hover:bg-cyan-500/10 font-semibold"
             >
-              Voir l'analyse complète
-              <ChevronRight className="w-4 h-4 ml-1" />
+              Voir l'analyse
+              <ChevronRight className="w-5 h-5 ml-1" />
             </Button>
           )}
         </div>
@@ -144,17 +125,18 @@ export default function MatchCard({ match, onAnalyze, isAnalyzing, onViewDetails
         <Button
           onClick={() => onAnalyze(match)}
           disabled={isAnalyzing}
-          className="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-black font-semibold"
+          size="lg"
+          className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold text-base py-6"
         >
           {isAnalyzing ? (
             <>
-              <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
+              <Sparkles className="w-5 h-5 mr-2 animate-pulse" />
               Analyse en cours...
             </>
           ) : (
             <>
-              <Sparkles className="w-4 h-4 mr-2" />
-              Analyser avec l'IA
+              <Sparkles className="w-5 h-5 mr-2" />
+              Pronostiquer
             </>
           )}
         </Button>

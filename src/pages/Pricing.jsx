@@ -185,9 +185,10 @@ export default function Pricing() {
               <Button
                 onClick={() => plan.planKey && handleSubscribe(plan.planKey)}
                 disabled={plan.limitations || isPremium}
-                className={`w-full mb-6 ${
+                size="lg"
+                className={`w-full mb-6 text-base py-6 ${
                   plan.highlighted
-                    ? "bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-black font-bold"
+                    ? "bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold"
                     : ""
                 }`}
                 variant={plan.buttonVariant}

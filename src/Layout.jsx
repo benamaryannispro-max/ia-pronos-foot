@@ -6,6 +6,10 @@ export default function Layout({ children }) {
           --background: 222.2 84% 4.9%;
           --foreground: 210 40% 98%;
         }
+
+        body {
+          background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
         
         * {
           scrollbar-width: thin;

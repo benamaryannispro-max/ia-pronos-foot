@@ -106,7 +106,7 @@ Nous sommes en janvier/février 2026.`,
       onClick={loadMatches}
       disabled={isLoading}
       variant="outline"
-      className="border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10"
+      className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"
     >
       {isLoading ? (
         <>
