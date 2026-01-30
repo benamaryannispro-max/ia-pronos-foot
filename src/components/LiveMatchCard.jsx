@@ -66,7 +66,7 @@ export default function LiveMatchCard({ match, onRefreshLive, isRefreshing, onVi
       <div className="flex items-center justify-between mb-4">
         <div className="flex-1 text-center">
           <div className="mx-auto mb-2">
-            <TeamLogo teamName={match.home_team} size="md" />
+            <TeamLogo teamName={match.home_team} size="md" logoUrl={match.logo_home} />
           </div>
           <p className="font-semibold text-white text-sm">{match.home_team}</p>
         </div>
@@ -79,7 +79,7 @@ export default function LiveMatchCard({ match, onRefreshLive, isRefreshing, onVi
         
         <div className="flex-1 text-center">
           <div className="mx-auto mb-2">
-            <TeamLogo teamName={match.away_team} size="md" />
+            <TeamLogo teamName={match.away_team} size="md" logoUrl={match.logo_away} />
           </div>
           <p className="font-semibold text-white text-sm">{match.away_team}</p>
         </div>

@@ -56,7 +56,7 @@ export default function LiveAnalysisDialog({ match, open, onOpenChange }) {
             <div className="flex items-center justify-center gap-6">
               <div className="text-center">
                 <div className="mx-auto mb-2">
-                  <TeamLogo teamName={match.home_team} size="lg" />
+                  <TeamLogo teamName={match.home_team} size="lg" logoUrl={match.logo_home} />
                 </div>
                 <p className="font-bold text-lg">{match.home_team}</p>
               </div>
@@ -67,7 +67,7 @@ export default function LiveAnalysisDialog({ match, open, onOpenChange }) {
               
               <div className="text-center">
                 <div className="mx-auto mb-2">
-                  <TeamLogo teamName={match.away_team} size="lg" />
+                  <TeamLogo teamName={match.away_team} size="lg" logoUrl={match.logo_away} />
                 </div>
                 <p className="font-bold text-lg">{match.away_team}</p>
               </div>

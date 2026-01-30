@@ -33,9 +33,17 @@ export default function LoadMatchesButton({ existingMatches, onMatchesLoaded }) 
 - Ligue des Champions
 - Europa League
 
-Pour chaque match, donne: l'équipe à domicile, l'équipe à l'extérieur, la compétition, et la date/heure exacte du match.
+Pour chaque match, donne:
+1. Équipe à domicile (nom exact)
+2. Équipe à l'extérieur (nom exact)
+3. Compétition
+4. Date/heure exacte du match (format ISO)
+5. URL du logo officiel de l'équipe domicile (cherche sur Wikipedia ou site officiel)
+6. URL du logo officiel de l'équipe extérieure (cherche sur Wikipedia ou site officiel)
+
+⚠️ Important: les URLs des logos doivent être des liens directs vers les images PNG ou SVG.
 Donne uniquement les matchs confirmés avec des dates précises.
-Nous sommes en janvier/février 2025.`,
+Nous sommes en janvier/février 2026.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -48,7 +56,9 @@ Nous sommes en janvier/février 2025.`,
                   home_team: { type: "string" },
                   away_team: { type: "string" },
                   league: { type: "string" },
-                  match_date: { type: "string", description: "Format ISO: YYYY-MM-DDTHH:MM:SS" }
+                  match_date: { type: "string", description: "Format ISO: YYYY-MM-DDTHH:MM:SS" },
+                  logo_home: { type: "string", description: "URL du logo équipe domicile" },
+                  logo_away: { type: "string", description: "URL du logo équipe extérieure" }
                 },
                 required: ["home_team", "away_team", "league", "match_date"]
               }
