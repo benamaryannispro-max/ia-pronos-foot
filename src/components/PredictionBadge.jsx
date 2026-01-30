@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 const predictionLabels = {
   "home_win": "1",
@@ -35,13 +36,18 @@ export default function PredictionBadge({ prediction, confidence, size = "md" })
   };
 
   return (
-    <div className={cn(
-      "inline-flex items-center rounded-xl border-2 bg-gradient-to-r font-bold",
-      getConfidenceColor(confidence),
-      sizeClasses[size]
-    )}>
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: "spring", duration: 0.5 }}
+      className={cn(
+        "inline-flex items-center rounded-xl border-2 bg-gradient-to-r font-bold",
+        getConfidenceColor(confidence),
+        sizeClasses[size]
+      )}
+    >
       <span>{predictionLabels[prediction] || prediction}</span>
       <span className="opacity-75">{confidence}%</span>
-    </div>
+    </motion.div>
   );
 }

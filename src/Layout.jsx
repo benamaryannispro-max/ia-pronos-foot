@@ -76,9 +76,14 @@ export default function Layout({ children }) {
       <div className="border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="w-10" />
-          <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
-            Prono<span className="text-cyan-400">Foot</span>
-          </h1>
+          <div className="text-center">
+            <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+              Prono<span className="text-cyan-400">Foot IA</span>
+            </h1>
+            <p className="text-xs text-slate-400 hidden md:block">
+              Pronostics intelligents, alimentés par l'IA
+            </p>
+          </div>
           {user && <NotificationBell userEmail={user.email} />}
         </div>
       </div>

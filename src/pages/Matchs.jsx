@@ -14,6 +14,7 @@ import LiveMatchCard from "@/components/LiveMatchCard";
 import LiveAnalysisDialog from "@/components/LiveAnalysisDialog";
 import UpdateLogosButton from "@/components/UpdateLogosButton";
 import SubscriptionGate from "@/components/SubscriptionGate";
+import PredictionSuccessAnimation from "@/components/PredictionSuccessAnimation";
 
 export default function Matchs() {
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -23,6 +24,8 @@ export default function Matchs() {
   const [editingMatch, setEditingMatch] = useState(null);
   const [refreshingLiveId, setRefreshingLiveId] = useState(null);
   const [selectedLiveMatch, setSelectedLiveMatch] = useState(null);
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+  const [successPrediction, setSuccessPrediction] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -307,6 +310,13 @@ IMPORTANT: Base ton analyse sur des données factuelles récentes uniquement.`,
         match_id: match.id,
         priority: match.is_vip ? "high" : "medium"
       });
+
+      // Show success animation
+      setSuccessPrediction({
+        prediction: result.prediction,
+        confidence: Math.min(95, Math.max(50, result.confidence))
+      });
+      setShowSuccessAnimation(true);
 
     } catch (error) {
       console.error("Erreur analyse:", error);
@@ -621,6 +631,16 @@ Fournis une analyse concise mais précise basée sur les données actuelles.`,
         match={selectedLiveMatch}
         open={!!selectedLiveMatch}
         onOpenChange={(open) => !open && setSelectedLiveMatch(null)}
+      />
+
+      <PredictionSuccessAnimation
+        show={showSuccessAnimation}
+        onComplete={() => {
+          setShowSuccessAnimation(false);
+          setSuccessPrediction(null);
+        }}
+        prediction={successPrediction?.prediction}
+        confidence={successPrediction?.confidence}
       />
     </div>
   );
