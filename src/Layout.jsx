@@ -59,8 +59,15 @@ export default function Layout({ children }) {
       </div>
 
       {/* Content */}
-      <div className="pb-24">
+      <div className="pb-32">
         {children}
+      </div>
+
+      {/* Disclaimer */}
+      <div className="fixed bottom-16 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800/50 py-2 z-40">
+        <p className="text-center text-xs text-slate-500">
+          ⚠️ Pronostics non garantis • Pour divertissement uniquement • Jouez responsable
+        </p>
       </div>
 
       {/* Bottom Navigation */}

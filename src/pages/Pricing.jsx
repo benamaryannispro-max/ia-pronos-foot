@@ -219,12 +219,28 @@ export default function Pricing() {
           ))}
         </div>
 
+        {/* Disclaimer légal */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="mt-12 max-w-3xl mx-auto"
+        >
+          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 text-center">
+            <p className="text-sm text-slate-400 leading-relaxed">
+              ⚠️ Les pronostics sont générés par intelligence artificielle et ne sont pas garantis. 
+              Ce service est proposé à titre de divertissement uniquement. 
+              Pariez de manière responsable et dans la limite de vos moyens.
+            </p>
+          </div>
+        </motion.div>
+
         {/* FAQ Section */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="mt-20 max-w-3xl mx-auto"
+          className="mt-12 max-w-3xl mx-auto"
         >
           <h2 className="text-2xl font-bold text-white text-center mb-8">
             Questions fréquentes

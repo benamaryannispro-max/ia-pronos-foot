@@ -104,6 +104,12 @@ export default function MatchCard({ match, onAnalyze, isAnalyzing, onViewDetails
             <PredictionBadge prediction={match.prediction} confidence={match.confidence} />
           </div>
 
+          {match.updated_date && (
+            <p className="text-xs text-slate-500 text-center">
+              Pronostic du {format(new Date(match.updated_date), "dd/MM à HH:mm", { locale: fr })}
+            </p>
+          )}
+
           {onViewDetails && (
             <Button
               variant="outline"

@@ -65,6 +65,16 @@ export default function Home() {
         <h2 className="text-3xl font-bold text-white mb-2">
           Bienvenue {isPremium && <span className="text-cyan-400">Premium</span>}
         </h2>
+        
+        {/* Taux de réussite visible */}
+        {history.length > 0 && (
+          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500/20 border-2 border-emerald-500/50 mt-4">
+            <Trophy className="w-5 h-5 text-emerald-400" />
+            <span className="text-2xl font-bold text-emerald-400">{winRate}%</span>
+            <span className="text-slate-300 text-sm">de réussite ({wins}/{history.filter(h => h.result !== "pending").length})</span>
+          </div>
+        )}
+        
         {!isPremium && (
           <Link to={createPageUrl("Pricing")}>
             <Button size="lg" className="mt-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold text-base px-8">

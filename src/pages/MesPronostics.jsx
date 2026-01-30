@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
 import { Trophy, Target, TrendingUp, Zap, Crown } from "lucide-react";
+import { format } from "date-fns";
 import StatsCard from "@/components/StatsCard";
 import HistoryStats from "@/components/HistoryStats";
 import SubscriptionGate from "@/components/SubscriptionGate";
@@ -83,10 +84,59 @@ export default function MesPronostics() {
         />
       </div>
 
+      {/* Transparence */}
+      <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6">
+        <p className="text-amber-400 text-sm font-semibold text-center">
+          ⚠️ Les pronostics ne sont pas garantis • Résultats basés sur l'analyse IA • Pour divertissement uniquement
+        </p>
+      </div>
+
       {/* Historique détaillé */}
       {isPremium ? (
         history.length > 0 ? (
-          <HistoryStats history={history} />
+          <>
+            <HistoryStats history={history} />
+            
+            {/* Liste complète de l'historique */}
+            <div className="mt-8 space-y-3">
+              <h3 className="text-xl font-bold text-white mb-4">Historique complet</h3>
+              {history.map((entry) => (
+                <div
+                  key={entry.id}
+                  className="bg-slate-800/40 border border-slate-700/30 rounded-xl p-4"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <p className="text-white font-semibold">{entry.home_team} vs {entry.away_team}</p>
+                      <p className="text-xs text-slate-400">{entry.league}</p>
+                    </div>
+                    <div className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      entry.result === "win" ? "bg-emerald-500/20 text-emerald-400" :
+                      entry.result === "loss" ? "bg-red-500/20 text-red-400" :
+                      "bg-slate-500/20 text-slate-400"
+                    }`}>
+                      {entry.result === "win" ? "✓ Gagné" : entry.result === "loss" ? "✗ Perdu" : "En cours"}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-3 text-xs">
+                    <span className="text-slate-400">
+                      Pronostic du {format(new Date(entry.created_date), "dd/MM/yyyy à HH:mm")}
+                    </span>
+                    {entry.confidence && (
+                      <span className="text-cyan-400 font-semibold">
+                        Confiance: {entry.confidence}%
+                      </span>
+                    )}
+                  </div>
+                  
+                  {entry.final_score && (
+                    <p className="text-sm text-slate-300 mt-2">Score: {entry.final_score}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
         ) : (
           <div className="text-center py-20">
             <p className="text-slate-400 text-lg">Aucun pronostic pour le moment</p>

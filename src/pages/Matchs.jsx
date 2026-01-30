@@ -275,6 +275,24 @@ Recherche temps réel:
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
+      {/* Taux de réussite global */}
+      {historyStats.total > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 text-center"
+        >
+          <div className="inline-flex items-center gap-3 px-6 py-3 rounded-xl bg-emerald-500/20 border-2 border-emerald-500/50">
+            <Trophy className="w-5 h-5 text-emerald-400" />
+            <div>
+              <span className="text-2xl font-bold text-emerald-400">{historyStats.winRate}%</span>
+              <span className="text-slate-300 text-sm ml-2">de réussite</span>
+            </div>
+            <span className="text-xs text-slate-400">({historyStats.wins}/{historyStats.total})</span>
+          </div>
+        </motion.div>
+      )}
+
       {/* Admin Controls */}
       {user?.role === 'admin' && (
         <div className="flex gap-3 mb-6">
