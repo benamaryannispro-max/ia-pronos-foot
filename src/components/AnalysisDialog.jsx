@@ -6,6 +6,7 @@ import PredictionBadge from "./PredictionBadge";
 import TeamLogo from "./TeamLogo";
 import LeagueLogo from "./LeagueLogo";
 import BookmakerOdds from "./BookmakerOdds";
+import SecondaryPredictions from "./SecondaryPredictions";
 
 const predictionLabels = {
   "home_win": "Victoire Domicile",
@@ -81,12 +82,36 @@ export default function AnalysisDialog({ match, open, onOpenChange, historyStats
           <div className="bg-gradient-to-r from-amber-500/10 to-yellow-600/10 border border-amber-500/30 rounded-xl p-4">
             <h3 className="font-semibold mb-3 flex items-center gap-2">
               <Target className="w-4 h-4 text-amber-400" />
-              Pronostic
+              Pronostic Principal
             </h3>
             <div className="flex items-center justify-center">
               <PredictionBadge prediction={match.prediction} confidence={match.confidence} size="lg" />
             </div>
+            <SecondaryPredictions predictions={match.secondary_predictions} />
           </div>
+
+          {/* Advanced Analysis */}
+          {match.advanced_analysis && (
+            <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4">
+              <h3 className="font-semibold mb-3 flex items-center gap-2 text-purple-400">
+                🎯 Analyse Avancée
+              </h3>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                {match.advanced_analysis.goals_home_expected && (
+                  <div className="bg-slate-800/50 rounded-lg p-2">
+                    <p className="text-slate-400 text-xs">Buts attendus {match.home_team}</p>
+                    <p className="text-white font-bold">{match.advanced_analysis.goals_home_expected.toFixed(1)}</p>
+                  </div>
+                )}
+                {match.advanced_analysis.goals_away_expected && (
+                  <div className="bg-slate-800/50 rounded-lg p-2">
+                    <p className="text-slate-400 text-xs">Buts attendus {match.away_team}</p>
+                    <p className="text-white font-bold">{match.advanced_analysis.goals_away_expected.toFixed(1)}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Analysis */}
           {match.analysis && (() => {
@@ -148,6 +173,26 @@ export default function AnalysisDialog({ match, open, onOpenChange, historyStats
                       📈 Forme récente
                     </h3>
                     <p className="text-slate-300 text-sm">{analysisData.form}</p>
+                  </div>
+                )}
+
+                {/* Head to Head */}
+                {analysisData.head_to_head && (
+                  <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-xl p-4">
+                    <h3 className="font-semibold mb-2 flex items-center gap-2 text-cyan-400">
+                      🔄 Confrontations directes
+                    </h3>
+                    <p className="text-slate-300 text-sm">{analysisData.head_to_head}</p>
+                  </div>
+                )}
+
+                {/* Tactical */}
+                {analysisData.tactical && (
+                  <div className="bg-indigo-500/10 border border-indigo-500/30 rounded-xl p-4">
+                    <h3 className="font-semibold mb-2 flex items-center gap-2 text-indigo-400">
+                      ⚡ Analyse tactique
+                    </h3>
+                    <p className="text-slate-300 text-sm">{analysisData.tactical}</p>
                   </div>
                 )}
               </div>
