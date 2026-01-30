@@ -91,6 +91,22 @@ export default function MesPronostics() {
         </p>
       </div>
 
+      {/* Advanced Stats Premium */}
+      {isPremium && history.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="mb-8"
+        >
+          <div className="mb-4 flex items-center gap-2">
+            <Trophy className="w-5 h-5 text-purple-400" />
+            <h2 className="text-xl font-bold text-white">Statistiques Avancées Premium</h2>
+          </div>
+          <AdvancedStats history={history} />
+        </motion.div>
+      )}
+
       {/* Historique détaillé */}
       {isPremium ? (
         history.length > 0 ? (
