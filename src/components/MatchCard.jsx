@@ -78,11 +78,11 @@ export default function MatchCard({ match, onAnalyze, isAnalyzing, onViewDetails
       <div className="flex items-center justify-between mb-5">
         <div className="flex-1 text-center">
           <div className="mx-auto mb-2">
-            <TeamLogo teamName={match.home_team} size="md" />
+            <TeamLogo teamName={match.home_team} size="md" logoUrl={match.logo_home} />
           </div>
           <p className="font-semibold text-white text-sm">{match.home_team}</p>
         </div>
-        
+
         <div className="px-4">
           {match.final_score ? (
             <div className="text-2xl font-bold text-white">{match.final_score}</div>
@@ -90,10 +90,10 @@ export default function MatchCard({ match, onAnalyze, isAnalyzing, onViewDetails
             <div className="text-slate-500 font-medium">VS</div>
           )}
         </div>
-        
+
         <div className="flex-1 text-center">
           <div className="mx-auto mb-2">
-            <TeamLogo teamName={match.away_team} size="md" />
+            <TeamLogo teamName={match.away_team} size="md" logoUrl={match.logo_away} />
           </div>
           <p className="font-semibold text-white text-sm">{match.away_team}</p>
         </div>

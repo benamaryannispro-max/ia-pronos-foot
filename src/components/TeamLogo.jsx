@@ -254,9 +254,10 @@ const getTeamLogoUrl = (teamName) => {
   return null;
 };
 
-export default function TeamLogo({ teamName, size = "md" }) {
+export default function TeamLogo({ teamName, size = "md", logoUrl: providedLogoUrl }) {
   const [imgError, setImgError] = useState(false);
-  const logoUrl = getTeamLogoUrl(teamName);
+  const fallbackLogoUrl = getTeamLogoUrl(teamName);
+  const logoUrl = providedLogoUrl || fallbackLogoUrl;
 
   const sizeClasses = {
     sm: "w-8 h-8",
