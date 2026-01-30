@@ -12,6 +12,8 @@ import LoadMatchesButton from "@/components/LoadMatchesButton";
 import HistoryStats from "@/components/HistoryStats";
 import AnalysisDialog from "@/components/AnalysisDialog";
 import UpdateResultDialog from "@/components/UpdateResultDialog";
+import LiveMatchCard from "@/components/LiveMatchCard";
+import LiveAnalysisDialog from "@/components/LiveAnalysisDialog";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -19,6 +21,8 @@ export default function Home() {
   const [analyzingMatchId, setAnalyzingMatchId] = useState(null);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [editingMatch, setEditingMatch] = useState(null);
+  const [refreshingLiveId, setRefreshingLiveId] = useState(null);
+  const [selectedLiveMatch, setSelectedLiveMatch] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: matches = [], isLoading } = useQuery({
@@ -227,6 +231,129 @@ ${historyContext}
     }
   };
 
+  const refreshLiveMatch = async (match) => {
+    setRefreshingLiveId(match.id);
+    
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `ANALYSE EN DIRECT - Match de football en cours:
+
+🏟️ ${match.home_team} vs ${match.away_team}
+📊 Score actuel: ${match.live_score || "0 - 0"}
+⏱️ Minute: ${match.live_minute || 0}'
+🏆 Compétition: ${match.league}
+
+RECHERCHE EN TEMPS RÉEL:
+1. Score actuel exact et minute de jeu
+2. Événements récents (buts, cartons, changements) dans les 15 dernières minutes
+3. Cotes ACTUELLES des bookmakers (Winamax, Betclic, Parions Sport)
+4. Statistiques du match (possession, tirs, corners)
+5. Analyse du momentum (quelle équipe domine actuellement)
+
+PRONOSTIC AJUSTÉ:
+Basé sur le déroulement actuel du match:
+- Le pronostic initial (${match.prediction}) est-il toujours valide?
+- Quels ajustements recommandes-tu?
+- Quels paris sont maintenant les plus intéressants?
+
+Donne une analyse courte et percutante du match en cours.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            live_score: {
+              type: "string",
+              description: "Score actuel (ex: 2 - 1)"
+            },
+            live_minute: {
+              type: "number",
+              description: "Minute de jeu actuelle"
+            },
+            recent_events: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  minute: { type: "number" },
+                  type: { type: "string", enum: ["goal", "yellow_card", "red_card", "substitution"] },
+                  description: { type: "string" }
+                }
+              },
+              description: "Événements récents (5 derniers max)"
+            },
+            summary: {
+              type: "string",
+              description: "Résumé de l'analyse en direct (3-4 phrases)"
+            },
+            momentum: {
+              type: "string",
+              description: "Quelle équipe domine? (ex: 'Domination de [équipe]', 'Match équilibré')"
+            },
+            key_factors: {
+              type: "string",
+              description: "Facteurs clés du match en cours"
+            },
+            prediction_update: {
+              type: "string",
+              description: "Mise à jour du pronostic basée sur le déroulement"
+            },
+            odds_winamax: {
+              type: "object",
+              properties: {
+                home: { type: "number" },
+                draw: { type: "number" },
+                away: { type: "number" }
+              }
+            },
+            odds_betclic: {
+              type: "object",
+              properties: {
+                home: { type: "number" },
+                draw: { type: "number" },
+                away: { type: "number" }
+              }
+            },
+            odds_parionssport: {
+              type: "object",
+              properties: {
+                home: { type: "number" },
+                draw: { type: "number" },
+                away: { type: "number" }
+              }
+            }
+          },
+          required: ["summary"]
+        }
+      });
+
+      const liveAnalysisData = {
+        summary: result.summary,
+        momentum: result.momentum,
+        key_factors: result.key_factors,
+        prediction_update: result.prediction_update
+      };
+
+      await updateMatchMutation.mutateAsync({
+        id: match.id,
+        data: {
+          live_score: result.live_score || match.live_score,
+          live_minute: result.live_minute || match.live_minute,
+          live_events: result.recent_events || match.live_events || [],
+          live_analysis: JSON.stringify(liveAnalysisData),
+          live_updated_at: new Date().toISOString(),
+          odds_winamax: result.odds_winamax || match.odds_winamax,
+          odds_betclic: result.odds_betclic || match.odds_betclic,
+          odds_parionssport: result.odds_parionssport || match.odds_parionssport
+        }
+      });
+
+    } catch (error) {
+      console.error("Erreur actualisation live:", error);
+    } finally {
+      setRefreshingLiveId(null);
+    }
+  };
+
   // Stats globales
   const allAnalyzed = matches.filter(m => m.prediction);
   const stats = {
@@ -240,8 +367,13 @@ ${historyContext}
     ? Math.round((stats.wins / (stats.wins + stats.losses)) * 100) 
     : 0;
 
+  // Séparation matchs live et autres
+  const liveMatches = matches.filter(m => m.status === "live");
+  
   // Filtrage des matchs
   const filteredMatches = matches.filter(match => {
+    if (match.status === "live") return false; // Les lives sont affichés séparément
+    
     const statusMatch = activeTab === "all" 
       || (activeTab === "upcoming" && (match.status === "upcoming" || !match.status))
       || (activeTab === "finished" && match.status === "finished")
@@ -375,6 +507,43 @@ ${historyContext}
           />
         </div>
 
+        {/* Live Matches Section */}
+        {liveMatches.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 border border-red-500/50">
+                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                <span className="font-bold text-red-400">PARIS LIVE</span>
+              </div>
+              <span className="text-sm text-slate-400">
+                {liveMatches.length} match{liveMatches.length > 1 ? 's' : ''} en cours
+              </span>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {liveMatches.map((match, index) => (
+                <motion.div
+                  key={match.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <LiveMatchCard
+                    match={match}
+                    onRefreshLive={refreshLiveMatch}
+                    isRefreshing={refreshingLiveId === match.id}
+                    onViewDetails={(m) => setSelectedLiveMatch(m)}
+                  />
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
         {/* Matches Grid */}
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
@@ -460,6 +629,12 @@ ${historyContext}
         onOpenChange={(open) => !open && setEditingMatch(null)}
         onUpdate={handleUpdateResult}
         isLoading={updateMatchMutation.isPending}
+      />
+
+      <LiveAnalysisDialog
+        match={selectedLiveMatch}
+        open={!!selectedLiveMatch}
+        onOpenChange={(open) => !open && setSelectedLiveMatch(null)}
       />
     </div>
   );
