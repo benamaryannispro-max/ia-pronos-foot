@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, Trophy, BarChart3, User } from "lucide-react";
+import { Home, Trophy, BarChart3, User, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import NotificationBell from "@/components/NotificationBell";
 import { useQuery } from "@tanstack/react-query";
@@ -29,6 +29,7 @@ export default function Layout({ children }) {
     { name: "Accueil", icon: Home, path: "" },
     { name: "Matchs", icon: Trophy, path: "Matchs" },
     { name: "Historique", icon: BarChart3, path: "HistoriqueMatchs" },
+    { name: "Classement", icon: Award, path: "Classement" },
     { name: "Profil", icon: User, path: "Profil" }
   ];
 
@@ -111,7 +112,7 @@ export default function Layout({ children }) {
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800/50 z-50">
         <div className="max-w-7xl mx-auto px-2">
-          <div className="grid grid-cols-4 gap-1">
+          <div className="grid grid-cols-5 gap-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path);
