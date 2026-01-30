@@ -118,14 +118,16 @@ export default function LiveMatchCard({ match, onRefreshLive, isRefreshing, onVi
         </div>
       )}
 
-      {/* Live Analysis */}
+      {/* Live Predictions */}
+      <LivePredictions 
+        livePredictions={match.live_predictions} 
+        liveAnalysis={match.live_analysis}
+      />
+
+      {/* Live Analysis Summary */}
       {liveAnalysisData && (
-        <div className="mb-4 bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-xl p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-4 h-4 text-red-400" />
-            <span className="text-xs font-semibold text-red-400">Analyse en direct</span>
-          </div>
-          <p className="text-xs text-slate-300 leading-relaxed line-clamp-3">
+        <div className="mb-4 bg-slate-700/30 rounded-xl p-3">
+          <p className="text-xs text-slate-300 leading-relaxed line-clamp-2">
             {liveAnalysisData.summary}
           </p>
         </div>
