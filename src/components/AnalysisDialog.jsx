@@ -89,15 +89,70 @@ export default function AnalysisDialog({ match, open, onOpenChange, historyStats
           </div>
 
           {/* Analysis */}
-          {match.analysis && (
-            <div className="bg-slate-800/50 rounded-xl p-4">
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-emerald-400" />
-                Analyse
-              </h3>
-              <p className="text-slate-300 leading-relaxed">{match.analysis}</p>
-            </div>
-          )}
+          {match.analysis && (() => {
+            let analysisData;
+            try {
+              analysisData = JSON.parse(match.analysis);
+            } catch {
+              analysisData = { analysis: match.analysis };
+            }
+            
+            return (
+              <div className="space-y-4">
+                {/* Analyse principale */}
+                <div className="bg-slate-800/50 rounded-xl p-4">
+                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-emerald-400" />
+                    Analyse détaillée
+                  </h3>
+                  <p className="text-slate-300 leading-relaxed">{analysisData.analysis}</p>
+                </div>
+
+                {/* Effectifs & Blessures */}
+                {analysisData.injuries && (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+                    <h3 className="font-semibold mb-2 flex items-center gap-2 text-red-400">
+                      🚑 Blessés & Suspendus
+                    </h3>
+                    <p className="text-slate-300 text-sm leading-relaxed">{analysisData.injuries}</p>
+                  </div>
+                )}
+
+                {/* Buteurs */}
+                {(analysisData.scorers_home || analysisData.scorers_away) && (
+                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
+                    <h3 className="font-semibold mb-3 flex items-center gap-2 text-amber-400">
+                      ⚽ Meilleurs buteurs
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      {analysisData.scorers_home && (
+                        <div>
+                          <p className="font-semibold text-white mb-1">{match.home_team}</p>
+                          <p className="text-slate-300">{analysisData.scorers_home}</p>
+                        </div>
+                      )}
+                      {analysisData.scorers_away && (
+                        <div>
+                          <p className="font-semibold text-white mb-1">{match.away_team}</p>
+                          <p className="text-slate-300">{analysisData.scorers_away}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Forme */}
+                {analysisData.form && (
+                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
+                    <h3 className="font-semibold mb-2 flex items-center gap-2 text-blue-400">
+                      📈 Forme récente
+                    </h3>
+                    <p className="text-slate-300 text-sm">{analysisData.form}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Historical Stats */}
           {historyStats && (

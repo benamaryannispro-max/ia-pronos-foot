@@ -113,11 +113,20 @@ export default function MatchCard({ match, onAnalyze, isAnalyzing, onViewDetails
             <PredictionBadge prediction={match.prediction} confidence={match.confidence} />
           </div>
           
-          {match.analysis && (
-            <p className="text-xs text-slate-400 text-center line-clamp-2 mt-2">
-              {match.analysis}
-            </p>
-          )}
+          {match.analysis && (() => {
+            let analysisText;
+            try {
+              const parsed = JSON.parse(match.analysis);
+              analysisText = parsed.analysis;
+            } catch {
+              analysisText = match.analysis;
+            }
+            return (
+              <p className="text-xs text-slate-400 text-center line-clamp-2 mt-2">
+                {analysisText}
+              </p>
+            );
+          })()}
 
           {onViewDetails && (
             <Button

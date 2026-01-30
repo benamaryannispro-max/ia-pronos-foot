@@ -57,28 +57,58 @@ export default function Home() {
         : '';
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Tu es un expert en analyse de paris sportifs football. Analyse ce match et donne un pronostic précis:
+        prompt: `Tu es un expert en analyse de paris sportifs football. Fais une analyse ULTRA-DÉTAILLÉE de ce match:
 
-Match: ${match.home_team} vs ${match.away_team}
-Compétition: ${match.league}
-Date: ${match.match_date}
+🏟️ MATCH: ${match.home_team} vs ${match.away_team}
+🏆 COMPÉTITION: ${match.league}
+📅 DATE: ${match.match_date}
 
-IMPORTANT: Recherche également les COTES ACTUELLES sur les bookmakers suivants:
-- Winamax
-- Betclic  
-- Parions Sport (FDJ)
+📊 RECHERCHE COMPLÈTE REQUISE:
 
-Pour chaque bookmaker, donne les cotes 1N2 (victoire domicile, nul, victoire extérieur).
+1️⃣ COTES BOOKMAKERS (essentielles):
+- Winamax: cotes 1N2
+- Betclic: cotes 1N2
+- Parions Sport (FDJ): cotes 1N2
 
-Analyse également:
-- La forme actuelle des deux équipes (5 derniers matchs)
-- Les confrontations directes récentes
-- Les absences et blessures connues
-- Le contexte du match (enjeux, classement)
-- Les statistiques domicile/extérieur
+2️⃣ EFFECTIFS & COMPOSITIONS PROBABLES:
+- Composition probable de ${match.home_team}
+- Composition probable de ${match.away_team}
+- Joueurs BLESSÉS ou SUSPENDUS pour les deux équipes
+- Retours de blessures importants
+- Absences clés qui pourraient impacter le match
+
+3️⃣ MEILLEURS BUTEURS & STATISTIQUES INDIVIDUELLES:
+- Top 3 buteurs de ${match.home_team} cette saison (nombre de buts)
+- Top 3 buteurs de ${match.away_team} cette saison (nombre de buts)
+- Leur forme récente (buts sur les 5 derniers matchs)
+- Passeurs décisifs clés
+
+4️⃣ FORME DES ÉQUIPES:
+- ${match.home_team}: 5 derniers matchs (V/N/D), buts marqués/encaissés
+- ${match.away_team}: 5 derniers matchs (V/N/D), buts marqués/encaissés
+- Série en cours (victoires consécutives, matchs sans défaite, etc.)
+- Momentum actuel de chaque équipe
+
+5️⃣ CONFRONTATIONS DIRECTES:
+- Résultats des 5 dernières confrontations
+- Bilan historique global
+- Statistiques lors des matchs à domicile pour ${match.home_team}
+
+6️⃣ STATISTIQUES AVANCÉES:
+- Performance à domicile de ${match.home_team}
+- Performance à l'extérieur de ${match.away_team}
+- Moyenne de buts par match
+- Clean sheets
+- Both Teams To Score (statistiques)
+
+7️⃣ CONTEXTE & ENJEUX:
+- Position au classement des deux équipes
+- Enjeux du match (course au titre, Europe, maintien)
+- Motivation respective
+- Calendrier récent et fatigue potentielle
 ${historyContext}
 
-Donne ton analyse détaillée et ton pronostic avec un niveau de confiance réaliste (entre 55 et 85% selon la certitude).`,
+💡 SYNTHÈSE: Fournis une analyse détaillée en 5-6 phrases qui couvre tous ces aspects, puis donne ton pronostic avec confiance réaliste (55-85%).`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -94,7 +124,23 @@ Donne ton analyse détaillée et ton pronostic avec un niveau de confiance réal
             },
             analysis: {
               type: "string",
-              description: "Analyse détaillée en 3-4 phrases incluant forme récente, stats clés et justification du pronostic"
+              description: "Analyse complète incluant: effectifs/blessures, forme des équipes, buteurs clés, confrontations directes, stats domicile/extérieur, et justification détaillée du pronostic (5-6 phrases minimum)"
+            },
+            key_injuries: {
+              type: "string",
+              description: "Liste des blessés/suspendus importants des deux équipes"
+            },
+            top_scorers_home: {
+              type: "string",
+              description: "Top 3 buteurs équipe domicile avec nombre de buts"
+            },
+            top_scorers_away: {
+              type: "string",
+              description: "Top 3 buteurs équipe extérieur avec nombre de buts"
+            },
+            team_form: {
+              type: "string",
+              description: "Forme des 2 équipes sur 5 derniers matchs (ex: VVNDV)"
             },
             odds_winamax: {
               type: "object",
@@ -128,12 +174,20 @@ Donne ton analyse détaillée et ton pronostic avec un niveau de confiance réal
         }
       });
 
+      const analysisDetails = {
+        analysis: result.analysis,
+        injuries: result.key_injuries,
+        scorers_home: result.top_scorers_home,
+        scorers_away: result.top_scorers_away,
+        form: result.team_form
+      };
+
       await updateMatchMutation.mutateAsync({
         id: match.id,
         data: {
           prediction: result.prediction,
           confidence: Math.min(85, Math.max(55, result.confidence)),
-          analysis: result.analysis,
+          analysis: JSON.stringify(analysisDetails),
           odds_winamax: result.odds_winamax,
           odds_betclic: result.odds_betclic,
           odds_parionssport: result.odds_parionssport
