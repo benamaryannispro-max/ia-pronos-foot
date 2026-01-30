@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
@@ -49,18 +49,52 @@ export default function Matchs() {
 
   const isPremium = subscription && subscription.plan !== "free";
 
-  const { data: matches = [], isLoading } = useQuery({
+  const { data: matches = [], isLoading, isError, error } = useQuery({
     queryKey: ["matches"],
-    queryFn: () => base44.entities.Match.list("-match_date", 100),
+    queryFn: async () => {
+      try {
+        return await base44.entities.Match.list("-match_date", 100);
+      } catch (err) {
+        console.error("Erreur chargement matchs:", err);
+        const cached = localStorage.getItem('cached_matches');
+        if (cached) {
+          return JSON.parse(cached);
+        }
+        throw err;
+      }
+    },
     staleTime: 2 * 60 * 1000,
-    gcTime: 10 * 60 * 1000
+    gcTime: 10 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
+    retry: 2
   });
+
+  useEffect(() => {
+    if (matches.length > 0) {
+      localStorage.setItem('cached_matches', JSON.stringify(matches));
+    }
+  }, [matches]);
+
+  useEffect(() => {
+    const unsubscribe = base44.entities.Match.subscribe((event) => {
+      queryClient.invalidateQueries({ queryKey: ["matches"] });
+    });
+    return unsubscribe;
+  }, [queryClient]);
 
   const { data: history = [] } = useQuery({
     queryKey: ["history"],
-    queryFn: () => base44.entities.PredictionHistory.list("-created_date", 200),
+    queryFn: async () => {
+      try {
+        return await base44.entities.PredictionHistory.list("-created_date", 200);
+      } catch (err) {
+        console.error("Erreur chargement historique:", err);
+        return [];
+      }
+    },
     staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
+    gcTime: 15 * 60 * 1000,
+    retry: 2
   });
 
   const updateMatchMutation = useMutation({
@@ -374,6 +408,15 @@ Recherche temps réel:
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
           <RefreshCw className="w-6 h-6 animate-spin text-cyan-400" />
+        </div>
+      ) : isError ? (
+        <div className="text-center py-20">
+          <p className="text-red-400 text-lg mb-2">Erreur de chargement</p>
+          <p className="text-slate-500 text-sm mb-4">{error?.message || "Impossible de charger les matchs"}</p>
+          <Button onClick={() => queryClient.invalidateQueries({ queryKey: ["matches"] })} variant="outline">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Réessayer
+          </Button>
         </div>
       ) : filteredMatches.length === 0 ? (
         <div className="text-center py-20">
