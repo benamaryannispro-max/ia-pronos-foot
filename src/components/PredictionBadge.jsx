@@ -7,7 +7,18 @@ const predictionLabels = {
   "over_2.5": "+2.5",
   "under_2.5": "-2.5",
   "btts_yes": "BTTS",
-  "btts_no": "No BTTS"
+  "btts_no": "No BTTS",
+  "home_win_ht": "1 MT",
+  "draw_ht": "N MT",
+  "away_win_ht": "2 MT",
+  "exact_score_1_0": "1-0",
+  "exact_score_2_0": "2-0",
+  "exact_score_2_1": "2-1",
+  "exact_score_3_0": "3-0",
+  "exact_score_0_0": "0-0",
+  "exact_score_1_1": "1-1",
+  "exact_score_0_1": "0-1",
+  "exact_score_0_2": "0-2"
 };
 
 export default function PredictionBadge({ prediction, confidence, size = "md" }) {

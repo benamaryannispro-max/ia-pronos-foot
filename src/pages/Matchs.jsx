@@ -122,20 +122,48 @@ export default function Matchs() {
         : '';
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyse ce match de football:
+        prompt: `Tu es un expert en analyse de matchs de football avec accès à des données en temps réel.
 
+MATCH À ANALYSER:
 ${match.home_team} vs ${match.away_team}
 ${match.league} - ${match.match_date}
 
-Recherche:
-1. Cotes actuelles (Winamax, Betclic, Parions Sport)
-2. Blessés/Suspendus
-3. Top 3 buteurs de chaque équipe
-4. Forme des 5 derniers matchs
-5. Confrontations directes
+ANALYSE APPROFONDIE REQUISE:
+
+1. STATISTIQUES DÉTAILLÉES:
+   - Forme récente (10 derniers matchs) avec contexte domicile/extérieur
+   - Buts marqués/encaissés sur les 5 derniers matchs
+   - Possession moyenne, tirs cadrés, corners
+   - Performance face à des équipes similaires
+
+2. CONFRONTATIONS DIRECTES:
+   - 5 dernières rencontres
+   - Tendances historiques
+   - Résultats domicile vs extérieur
+
+3. COMPOSITION & BLESSURES:
+   - Joueurs clés absents (blessures, suspensions)
+   - Impact de ces absences
+   - Top 3 buteurs de chaque équipe avec stats de la saison
+
+4. COTES BOOKMAKERS (Winamax, Betclic, Parions Sport):
+   - 1X2, Over/Under 2.5, BTTS
+   - Identifier les value bets
+
+5. CONTEXTE SPORTIF:
+   - Position au classement
+   - Motivation (course au titre, maintien, coupe)
+   - Calendrier chargé, rotation
+
+6. ANALYSE MI-TEMPS:
+   - Tendance mi-temps récente
+   - Probabilité de marquer en 1ère mi-temps
+
+7. SCORES EXACTS PROBABLES:
+   - Top 3 scores les plus probables avec pourcentages
 ${historyContext}
 
-Analyse courte et pronostic précis.`,
+IMPORTANT: Base ton analyse sur des données factuelles récentes uniquement.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -144,12 +172,41 @@ Analyse courte et pronostic précis.`,
               type: "string",
               enum: ["home_win", "draw", "away_win", "over_2.5", "under_2.5", "btts_yes", "btts_no"]
             },
-            confidence: { type: "number" },
+            confidence: { 
+              type: "number",
+              description: "Entre 50 et 95"
+            },
             analysis: { type: "string" },
             key_injuries: { type: "string" },
             top_scorers_home: { type: "string" },
             top_scorers_away: { type: "string" },
             team_form: { type: "string" },
+            head_to_head: { type: "string" },
+            tactical_insights: { type: "string" },
+            halftime_prediction: {
+              type: "string",
+              enum: ["home_win_ht", "draw_ht", "away_win_ht"]
+            },
+            halftime_confidence: { type: "number" },
+            exact_score_predictions: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  score: { type: "string" },
+                  probability: { type: "number" }
+                }
+              }
+            },
+            goals_home_expected: { type: "number" },
+            goals_away_expected: { type: "number" },
+            possession_expected: {
+              type: "object",
+              properties: {
+                home: { type: "number" },
+                away: { type: "number" }
+              }
+            },
             odds_winamax: {
               type: "object",
               properties: {
@@ -184,18 +241,50 @@ Analyse courte et pronostic précis.`,
         injuries: result.key_injuries,
         scorers_home: result.top_scorers_home,
         scorers_away: result.top_scorers_away,
-        form: result.team_form
+        form: result.team_form,
+        head_to_head: result.head_to_head,
+        tactical: result.tactical_insights
+      };
+
+      const secondaryPredictions = [];
+      
+      if (result.halftime_prediction && result.halftime_confidence) {
+        secondaryPredictions.push({
+          type: "halftime",
+          prediction: result.halftime_prediction,
+          confidence: result.halftime_confidence
+        });
+      }
+
+      if (result.exact_score_predictions && result.exact_score_predictions.length > 0) {
+        result.exact_score_predictions.slice(0, 3).forEach(esp => {
+          secondaryPredictions.push({
+            type: "exact_score",
+            prediction: esp.score,
+            confidence: Math.round(esp.probability)
+          });
+        });
+      }
+
+      const advancedAnalysis = {
+        goals_home_expected: result.goals_home_expected,
+        goals_away_expected: result.goals_away_expected,
+        possession_expected: result.possession_expected,
+        exact_scores: result.exact_score_predictions
       };
 
       await updateMatchMutation.mutateAsync({
         id: match.id,
         data: {
           prediction: result.prediction,
-          confidence: Math.min(85, Math.max(55, result.confidence)),
+          confidence: Math.min(95, Math.max(50, result.confidence)),
           analysis: JSON.stringify(analysisDetails),
+          secondary_predictions: secondaryPredictions,
+          advanced_analysis: advancedAnalysis,
           odds_winamax: result.odds_winamax,
           odds_betclic: result.odds_betclic,
-          odds_parionssport: result.odds_parionssport
+          odds_parionssport: result.odds_parionssport,
+          half_time_score: null
         }
       });
 
@@ -257,15 +346,27 @@ Analyse courte et pronostic précis.`,
     
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyse live: ${match.home_team} vs ${match.away_team}
+        prompt: `ANALYSE LIVE TEMPS RÉEL:
+
+Match: ${match.home_team} vs ${match.away_team}
 Score actuel: ${match.live_score || "0-0"}
 Minute: ${match.live_minute || 0}'
+Prono initial: ${match.prediction} (${match.confidence}%)
 
-Recherche temps réel:
-- Score et minute exacts
-- Événements récents
-- Cotes actuelles
-- Analyse momentum`,
+RECHERCHE DONNÉES EN DIRECT:
+1. Score exact et minute de jeu
+2. Événements récents (buts, cartons, remplacements)
+3. Statistiques live (possession, tirs, corners)
+4. Momentum et tendance du match
+5. Cotes live actualisées
+
+PRONOSTICS DYNAMIQUES:
+- Probabilité de but suivant (quelle équipe ?)
+- Score final probable ajusté
+- Prédiction pour les 15 prochaines minutes
+- Ajustement du pronostic initial
+
+Fournis une analyse concise mais précise basée sur les données actuelles.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -274,14 +375,37 @@ Recherche temps réel:
             live_minute: { type: "number" },
             recent_events: { type: "array", items: { type: "object" } },
             summary: { type: "string" },
-            momentum: { type: "string" }
+            momentum: { type: "string" },
+            next_goal_team: { type: "string" },
+            final_score_prediction: { type: "string" },
+            live_stats: {
+              type: "object",
+              properties: {
+                possession_home: { type: "number" },
+                possession_away: { type: "number" },
+                shots_home: { type: "number" },
+                shots_away: { type: "number" }
+              }
+            },
+            adjusted_prediction: { type: "string" },
+            adjusted_confidence: { type: "number" }
           }
         }
       });
 
       const liveAnalysisData = {
         summary: result.summary,
-        momentum: result.momentum
+        momentum: result.momentum,
+        next_goal: result.next_goal_team,
+        final_prediction: result.final_score_prediction,
+        stats: result.live_stats
+      };
+
+      const livePredictions = {
+        adjusted_prediction: result.adjusted_prediction,
+        adjusted_confidence: result.adjusted_confidence,
+        next_goal_team: result.next_goal_team,
+        final_score_prediction: result.final_score_prediction
       };
 
       await updateMatchMutation.mutateAsync({
@@ -291,6 +415,7 @@ Recherche temps réel:
           live_minute: result.live_minute || match.live_minute,
           live_events: result.recent_events || [],
           live_analysis: JSON.stringify(liveAnalysisData),
+          live_predictions: livePredictions,
           live_updated_at: new Date().toISOString()
         }
       });

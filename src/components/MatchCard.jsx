@@ -7,6 +7,7 @@ import PredictionBadge from "./PredictionBadge";
 import TeamLogo from "./TeamLogo";
 import LeagueLogo from "./LeagueLogo";
 import BookmakerOdds from "./BookmakerOdds";
+import SecondaryPredictions from "./SecondaryPredictions";
 import { Button } from "@/components/ui/button";
 
 export default function MatchCard({ match, onAnalyze, isAnalyzing, onViewDetails }) {
@@ -110,6 +111,8 @@ export default function MatchCard({ match, onAnalyze, isAnalyzing, onViewDetails
           <div className="flex items-center justify-center mb-3">
             <PredictionBadge prediction={match.prediction} confidence={match.confidence} />
           </div>
+
+          <SecondaryPredictions predictions={match.secondary_predictions} />
 
           {match.updated_date && (
             <p className="text-xs text-slate-500 text-center">

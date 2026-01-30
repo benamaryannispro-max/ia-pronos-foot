@@ -47,26 +47,26 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import CGU from './pages/CGU';
 import Classement from './pages/Classement';
+import Confidentialite from './pages/Confidentialite';
 import Home from './pages/Home';
 import Matchs from './pages/Matchs';
 import MesPronostics from './pages/MesPronostics';
 import Pricing from './pages/Pricing';
 import Profil from './pages/Profil';
-import CGU from './pages/CGU';
-import Confidentialite from './pages/Confidentialite';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "CGU": CGU,
     "Classement": Classement,
+    "Confidentialite": Confidentialite,
     "Home": Home,
     "Matchs": Matchs,
     "MesPronostics": MesPronostics,
     "Pricing": Pricing,
     "Profil": Profil,
-    "CGU": CGU,
-    "Confidentialite": Confidentialite,
 }
 
 export const pagesConfig = {
