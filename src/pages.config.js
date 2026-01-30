@@ -49,12 +49,18 @@
  */
 import Home from './pages/Home';
 import Pricing from './pages/Pricing';
+import Matchs from './pages/Matchs';
+import MesPronostics from './pages/MesPronostics';
+import Profil from './pages/Profil';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "Home": Home,
     "Pricing": Pricing,
+    "Matchs": Matchs,
+    "MesPronostics": MesPronostics,
+    "Profil": Profil,
 }
 
 export const pagesConfig = {
