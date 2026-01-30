@@ -1,15 +1,31 @@
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, Trophy, BarChart3, User } from "lucide-react";
+import { Home, Trophy, BarChart3, User, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
+import NotificationBell from "@/components/NotificationBell";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
+import { useEffect } from "react";
 
 export default function Layout({ children }) {
   const location = useLocation();
   
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 10 * 60 * 1000
+  });
+
+  useEffect(() => {
+    if (user?.email) {
+      base44.functions.invoke('trackVisit', {});
+    }
+  }, [user?.email]);
+  
   const navItems = [
     { name: "Accueil", icon: Home, path: "" },
     { name: "Matchs", icon: Trophy, path: "Matchs" },
-    { name: "Mes Pronostics", icon: BarChart3, path: "MesPronostics" },
+    { name: "Classement", icon: Award, path: "Classement" },
     { name: "Profil", icon: User, path: "Profil" }
   ];
 
@@ -51,10 +67,12 @@ export default function Layout({ children }) {
 
       {/* Header */}
       <div className="border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight text-center">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="w-10" />
+          <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
             Prono<span className="text-cyan-400">Foot</span>
           </h1>
+          {user && <NotificationBell userEmail={user.email} />}
         </div>
       </div>
 
