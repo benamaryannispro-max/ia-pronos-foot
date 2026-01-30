@@ -51,6 +51,8 @@ export default function LeagueLogo({ league, size = "sm", showName = true }) {
         <img
           src={logoUrl}
           alt={league}
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-contain"
           onError={() => setImgError(true)}
         />

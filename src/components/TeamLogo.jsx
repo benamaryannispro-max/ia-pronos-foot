@@ -278,6 +278,8 @@ export default function TeamLogo({ teamName, size = "md", logoUrl: providedLogoU
       <img
         src={logoUrl}
         alt={teamName}
+        loading="lazy"
+        decoding="async"
         className="w-full h-full object-contain"
         onError={() => setImgError(true)}
       />
