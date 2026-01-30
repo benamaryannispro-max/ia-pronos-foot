@@ -176,6 +176,14 @@ Analyse courte et pronostic précis.`,
         result: "pending"
       });
 
+      await base44.entities.Notification.create({
+        user_email: user.email,
+        type: "new_prediction",
+        title: "⚽ Nouveau prono disponible !",
+        message: `${match.home_team} vs ${match.away_team}`,
+        match_id: match.id
+      });
+
     } catch (error) {
       console.error("Erreur analyse:", error);
     } finally {
@@ -193,6 +201,18 @@ Analyse courte et pronostic précis.`,
         result: data.result
       });
       queryClient.invalidateQueries({ queryKey: ["history"] });
+
+      await base44.functions.invoke('updateUserStats', { predictionResult: data.result });
+
+      const match = matches.find(m => m.id === matchId);
+      if (match) {
+        await base44.entities.Notification.create({
+          user_email: user.email,
+          type: "prediction_result",
+          title: data.result === "win" ? "🎯 Prono gagné !" : "Prono perdu",
+          message: `${match.home_team} vs ${match.away_team} - ${data.final_score}`
+        });
+      }
     }
   };
 

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
-import { Crown, Mail, User as UserIcon, Calendar, LogOut } from "lucide-react";
+import { Crown, Mail, User as UserIcon, Calendar, LogOut, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import PremiumBadge from "@/components/PremiumBadge";
@@ -9,6 +9,8 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import StreakDisplay from "@/components/StreakDisplay";
+import BadgeDisplay from "@/components/BadgeDisplay";
 
 export default function Profil() {
   const { data: user } = useQuery({
@@ -34,6 +36,17 @@ export default function Profil() {
   });
 
   const isPremium = subscription && subscription.plan !== "free";
+
+  const { data: userStats } = useQuery({
+    queryKey: ['userStats', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return null;
+      const stats = await base44.entities.UserStats.filter({ user_email: user.email });
+      return stats[0] || null;
+    },
+    enabled: !!user?.email,
+    staleTime: 60000
+  });
 
   const handleLogout = () => {
     base44.auth.logout();
@@ -116,6 +129,46 @@ export default function Profil() {
             )}
           </CardContent>
         </Card>
+
+        {/* Gamification */}
+        {userStats && (
+          <>
+            <Card className="bg-slate-800/40 border-slate-700/30 mb-6">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Award className="w-5 h-5 text-yellow-400" />
+                  Progression
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 rounded-xl p-4 text-center">
+                    <p className="text-3xl font-bold text-cyan-400">{userStats.level}</p>
+                    <p className="text-sm text-slate-300 font-semibold">Niveau</p>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl p-4 text-center">
+                    <p className="text-3xl font-bold text-purple-400">{userStats.points}</p>
+                    <p className="text-sm text-slate-300 font-semibold">Points</p>
+                  </div>
+                </div>
+
+                <StreakDisplay 
+                  streakDays={userStats.streak_days || 0}
+                  bestStreak={userStats.best_streak || 0}
+                />
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-800/40 border-slate-700/30 mb-6">
+              <CardHeader>
+                <CardTitle className="text-white">Badges</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <BadgeDisplay badges={userStats.badges || []} showAll={true} size="sm" />
+              </CardContent>
+            </Card>
+          </>
+        )}
 
         {/* Logout */}
         <Button
