@@ -62,6 +62,34 @@ Deno.serve(async (req) => {
       }
     });
 
+    // En mode test, créer l'abonnement immédiatement
+    // (le webhook ne fonctionne pas en local)
+    if (Deno.env.get('STRIPE_SECRET_KEY').startsWith('sk_test_')) {
+      const existing = await base44.asServiceRole.entities.Subscription.filter({
+        user_email: user.email,
+        status: "active"
+      });
+
+      if (existing.length > 0) {
+        await base44.asServiceRole.entities.Subscription.update(existing[0].id, {
+          plan: `premium_${plan}`,
+          stripe_subscription_id: session.subscription || 'test_sub',
+          stripe_customer_id: session.customer,
+          start_date: new Date().toISOString()
+        });
+      } else {
+        await base44.asServiceRole.entities.Subscription.create({
+          user_email: user.email,
+          plan: `premium_${plan}`,
+          status: "active",
+          stripe_subscription_id: session.subscription || 'test_sub',
+          stripe_customer_id: session.customer,
+          start_date: new Date().toISOString()
+        });
+      }
+      console.log(`✅ Abonnement test créé pour ${user.email}`);
+    }
+
     return Response.json({ url: session.url });
   } catch (error) {
     console.error('Erreur création checkout:', error);
