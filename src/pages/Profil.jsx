@@ -22,7 +22,7 @@ export default function Profil() {
     gcTime: 30 * 60 * 1000
   });
 
-  const { data: subscription } = useQuery({
+  const { data: subscription, refetch: refetchSubscription } = useQuery({
     queryKey: ['subscription', user?.email],
     queryFn: async () => {
       if (!user?.email) return null;
@@ -30,12 +30,18 @@ export default function Profil() {
         user_email: user.email,
         status: "active"
       });
+      console.log('Abonnements trouvés:', subs);
       return subs[0] || null;
     },
     enabled: !!user?.email,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000
   });
+
+  const handleForceRefresh = async () => {
+    await refetchSubscription();
+    window.location.reload();
+  };
 
   const isPremium = subscription && subscription.plan !== "free";
 
@@ -95,7 +101,17 @@ export default function Profil() {
         {/* Subscription Card */}
         <Card className="bg-slate-800/40 border-slate-700/30 mb-6">
           <CardHeader>
-            <CardTitle className="text-white">Abonnement</CardTitle>
+            <CardTitle className="text-white flex items-center justify-between">
+              Abonnement
+              <Button 
+                onClick={handleForceRefresh}
+                size="sm"
+                variant="outline"
+                className="text-xs"
+              >
+                🔄 Actualiser
+              </Button>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {isPremium ? (
