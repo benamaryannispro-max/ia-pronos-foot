@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 
 const LEAGUES = [
   { name: "Ligue 1", country: "France" },
+  { name: "Coupe de France", country: "France" },
   { name: "Premier League", country: "Angleterre" },
   { name: "La Liga", country: "Espagne" },
   { name: "Serie A", country: "Italie" },
@@ -26,6 +27,7 @@ export default function LoadMatchesButton({ existingMatches, onMatchesLoaded }) 
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `Donne-moi la liste des matchs de football des 7 prochains jours pour ces compétitions:
 - Ligue 1 (France)
+- Coupe de France
 - Premier League (Angleterre)
 - La Liga (Espagne)
 - Serie A (Italie)

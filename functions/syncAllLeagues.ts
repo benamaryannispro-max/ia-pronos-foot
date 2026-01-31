@@ -2,10 +2,13 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 const LEAGUES = [
   "Ligue 1",
+  "Coupe de France",
   "Premier League",
   "La Liga",
   "Serie A",
-  "Bundesliga"
+  "Bundesliga",
+  "Ligue des Champions",
+  "Europa League"
 ];
 
 Deno.serve(async (req) => {

@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 const LEAGUE_CODES = {
   "Ligue 1": "FL1",
+  "Coupe de France": "CLI",
   "Premier League": "PL",
   "La Liga": "PD",
   "Serie A": "SA",
