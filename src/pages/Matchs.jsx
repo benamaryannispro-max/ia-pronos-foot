@@ -15,6 +15,7 @@ import LiveAnalysisDialog from "@/components/LiveAnalysisDialog";
 import UpdateLogosButton from "@/components/UpdateLogosButton";
 import SubscriptionGate from "@/components/SubscriptionGate";
 import PredictionSuccessAnimation from "@/components/PredictionSuccessAnimation";
+import SyncDataButton from "@/components/SyncDataButton";
 
 export default function Matchs() {
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -488,7 +489,7 @@ Fournis une analyse concise mais précise basée sur les données actuelles.`,
 
       {/* Admin Controls */}
       {user?.role === 'admin' && (
-        <div className="flex gap-3 mb-6">
+        <div className="flex gap-3 mb-6 flex-wrap">
           <LoadMatchesButton
             existingMatches={matches}
             onMatchesLoaded={() => queryClient.invalidateQueries({ queryKey: ["matches"] })}
@@ -496,6 +497,12 @@ Fournis une analyse concise mais précise basée sur les données actuelles.`,
           <UpdateLogosButton
             matches={matches}
             onComplete={() => queryClient.invalidateQueries({ queryKey: ["matches"] })}
+          />
+          <SyncDataButton 
+            onSyncComplete={() => {
+              queryClient.invalidateQueries({ queryKey: ["matches"] });
+              queryClient.invalidateQueries({ queryKey: ["teamStats"] });
+            }}
           />
         </div>
       )}
