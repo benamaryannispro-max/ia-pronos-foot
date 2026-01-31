@@ -53,8 +53,8 @@ Deno.serve(async (req) => {
           quantity: 1,
         },
       ],
-      success_url: `${req.headers.get('origin')}/?subscription=success`,
-      cancel_url: `${req.headers.get('origin')}/Pricing?cancelled=true`,
+      success_url: `${req.headers.get('origin') || 'http://localhost:3000'}/?subscription=success`,
+      cancel_url: `${req.headers.get('origin') || 'http://localhost:3000'}/Pricing?cancelled=true`,
       metadata: {
         base44_app_id: Deno.env.get("BASE44_APP_ID"),
         user_email: user.email,
