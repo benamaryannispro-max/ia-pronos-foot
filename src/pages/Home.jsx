@@ -10,6 +10,8 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 export default function Home() {
+  const queryClient = useQueryClient();
+
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -31,6 +33,19 @@ export default function Home() {
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000
   });
+
+  // Rafraîchir l'abonnement après paiement
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('subscription') === 'success' && user?.email) {
+      // Attendre 2 secondes puis rafraîchir
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['subscription', user.email] });
+        // Nettoyer l'URL
+        window.history.replaceState({}, document.title, '/');
+      }, 2000);
+    }
+  }, [user?.email, queryClient]);
 
   const isPremium = subscription && subscription.plan !== "free";
 

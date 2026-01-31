@@ -50,12 +50,12 @@
 import CGU from './pages/CGU';
 import Classement from './pages/Classement';
 import Confidentialite from './pages/Confidentialite';
+import HistoriqueMatchs from './pages/HistoriqueMatchs';
 import Home from './pages/Home';
 import Matchs from './pages/Matchs';
 import MesPronostics from './pages/MesPronostics';
 import Pricing from './pages/Pricing';
 import Profil from './pages/Profil';
-import HistoriqueMatchs from './pages/HistoriqueMatchs';
 import __Layout from './Layout.jsx';
 
 
@@ -63,12 +63,12 @@ export const PAGES = {
     "CGU": CGU,
     "Classement": Classement,
     "Confidentialite": Confidentialite,
+    "HistoriqueMatchs": HistoriqueMatchs,
     "Home": Home,
     "Matchs": Matchs,
     "MesPronostics": MesPronostics,
     "Pricing": Pricing,
     "Profil": Profil,
-    "HistoriqueMatchs": HistoriqueMatchs,
 }
 
 export const pagesConfig = {
