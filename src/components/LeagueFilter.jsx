@@ -5,6 +5,7 @@ import LeagueLogo from "./LeagueLogo";
 const leagues = [
   { id: "all", name: "Tous" },
   { id: "Ligue 1", name: "Ligue 1" },
+  { id: "Coupe de France", name: "Coupe de France" },
   { id: "Premier League", name: "Premier League" },
   { id: "La Liga", name: "La Liga" },
   { id: "Serie A", name: "Serie A" },
