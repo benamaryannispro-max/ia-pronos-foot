@@ -1,10 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
 import { Trophy, Medal, Crown, Flame, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
+import SyncDataButton from "@/components/SyncDataButton";
 
 export default function Classement() {
+  const queryClient = useQueryClient();
+  
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me()
@@ -64,6 +67,17 @@ export default function Classement() {
         <h1 className="text-3xl font-bold text-white mb-2">Top Pronostiqueurs</h1>
         {userRank > 0 && (
           <p className="text-slate-400">Votre rang : #{userRank}</p>
+        )}
+        
+        {user?.role === 'admin' && (
+          <div className="mt-4">
+            <SyncDataButton 
+              onSyncComplete={() => {
+                queryClient.invalidateQueries({ queryKey: ['teamStats'] });
+                queryClient.invalidateQueries({ queryKey: ['leagueStandings'] });
+              }}
+            />
+          </div>
         )}
       </motion.div>
 
