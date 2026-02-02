@@ -36,22 +36,7 @@ export default function Matchs() {
     gcTime: 30 * 60 * 1000
   });
 
-  const { data: subscription } = useQuery({
-    queryKey: ['subscription', user?.email],
-    queryFn: async () => {
-      if (!user?.email) return null;
-      const subs = await base44.entities.Subscription.filter({ 
-        user_email: user.email,
-        status: "active"
-      });
-      return subs[0] || null;
-    },
-    enabled: !!user?.email,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
-  });
-
-  const isPremium = subscription && subscription.plan !== "free";
+  const isPremium = true;
 
   const { data: matches = [], isLoading, isError, error } = useQuery({
     queryKey: ["matches"],

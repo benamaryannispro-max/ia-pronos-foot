@@ -22,28 +22,7 @@ export default function Profil() {
     gcTime: 30 * 60 * 1000
   });
 
-  const { data: subscription, refetch: refetchSubscription } = useQuery({
-    queryKey: ['subscription', user?.email],
-    queryFn: async () => {
-      if (!user?.email) return null;
-      const subs = await base44.entities.Subscription.filter({ 
-        user_email: user.email,
-        status: "active"
-      });
-      console.log('Abonnements trouvés:', subs);
-      return subs[0] || null;
-    },
-    enabled: !!user?.email,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
-  });
-
-  const handleForceRefresh = async () => {
-    await refetchSubscription();
-    window.location.reload();
-  };
-
-  const isPremium = subscription && subscription.plan !== "free";
+  const isPremium = true;
 
   const { data: userStats } = useQuery({
     queryKey: ['userStats', user?.email],
