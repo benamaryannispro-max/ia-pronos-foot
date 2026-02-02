@@ -19,35 +19,7 @@ export default function Home() {
     gcTime: 30 * 60 * 1000
   });
 
-  const { data: subscription } = useQuery({
-    queryKey: ['subscription', user?.email],
-    queryFn: async () => {
-      if (!user?.email) return null;
-      const subs = await base44.entities.Subscription.filter({ 
-        user_email: user.email,
-        status: "active"
-      });
-      return subs[0] || null;
-    },
-    enabled: !!user?.email,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000
-  });
-
-  // Rafraîchir l'abonnement après paiement
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('subscription') === 'success' && user?.email) {
-      // Attendre 2 secondes puis rafraîchir
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['subscription', user.email] });
-        // Nettoyer l'URL
-        window.history.replaceState({}, document.title, '/');
-      }, 2000);
-    }
-  }, [user?.email, queryClient]);
-
-  const isPremium = subscription && subscription.plan !== "free";
+  const isPremium = true;
 
   const { data: matches = [] } = useQuery({
     queryKey: ["matches"],
@@ -79,7 +51,7 @@ export default function Home() {
         className="text-center mb-8"
       >
         <h2 className="text-3xl font-bold text-white mb-2">
-          Bienvenue {isPremium && <span className="text-cyan-400">Premium</span>}
+          Bienvenue
         </h2>
         
         {/* Taux de réussite visible */}
@@ -89,15 +61,6 @@ export default function Home() {
             <span className="text-2xl font-bold text-emerald-400">{winRate}%</span>
             <span className="text-slate-300 text-sm">de réussite ({wins}/{history.filter(h => h.result !== "pending").length})</span>
           </div>
-        )}
-        
-        {!isPremium && (
-          <Link to={createPageUrl("Pricing")}>
-            <Button size="lg" className="mt-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold text-base px-8">
-              <Crown className="w-5 h-5 mr-2" />
-              Passer Premium
-            </Button>
-          </Link>
         )}
       </motion.div>
 

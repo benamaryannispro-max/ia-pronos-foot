@@ -56,7 +56,6 @@ export default function Profil() {
           <CardHeader>
             <CardTitle className="text-white flex items-center justify-between">
               Mon Profil
-              {isPremium && <VIPBadge />}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -77,58 +76,8 @@ export default function Profil() {
           </CardContent>
         </Card>
 
-        {/* Subscription Card */}
-        <Card className="bg-slate-800/40 border-slate-700/30 mb-6">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center justify-between">
-              Abonnement
-              <Button 
-                onClick={handleForceRefresh}
-                size="sm"
-                variant="outline"
-                className="text-xs"
-              >
-                🔄 Actualiser
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isPremium ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-300">Plan actuel</span>
-                  <span className="font-bold text-cyan-400 text-lg">
-                    {planLabels[subscription.plan] || subscription.plan}
-                  </span>
-                </div>
-                {subscription.start_date && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-400">Actif depuis</span>
-                    <span className="text-slate-300">
-                      {format(new Date(subscription.start_date), "dd MMMM yyyy", { locale: fr })}
-                    </span>
-                  </div>
-                )}
-                <p className="text-xs text-slate-500 mt-4">
-                  Gérez votre abonnement depuis votre compte Stripe
-                </p>
-              </div>
-            ) : (
-              <div className="text-center py-6">
-                <p className="text-slate-400 mb-6">Vous êtes sur le plan gratuit</p>
-                <Link to={createPageUrl("Pricing")}>
-                  <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold text-base px-8">
-                    <Crown className="w-5 h-5 mr-2" />
-                    Passer Premium
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Équipes favorites */}
-        {isPremium && user && (
+        {user && (
           <div className="mb-6">
             <FavoriteTeamsManager userEmail={user.email} />
           </div>
