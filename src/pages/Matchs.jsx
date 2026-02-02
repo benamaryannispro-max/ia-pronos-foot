@@ -425,10 +425,17 @@ Fournis une analyse concise mais précise basée sur les données actuelles.`,
 
   const liveMatches = matches.filter(m => m.status === "live");
   
+  // Date actuelle pour filtrer les matchs passés
+  const now = new Date();
+  
   // Filtrer uniquement les matchs à venir (pas les passés)
   let filteredMatches = matches.filter(match => {
     if (match.status === "live") return false;
-    if (match.status === "finished") return false; // Exclure matchs terminés
+    if (match.status === "finished") return false;
+    
+    // Exclure automatiquement les matchs dont la date est passée
+    const matchDate = new Date(match.match_date);
+    if (matchDate < now) return false;
     
     if (match.is_vip && !isPremium) return false;
     
