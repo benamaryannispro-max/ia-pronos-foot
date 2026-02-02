@@ -425,24 +425,35 @@ Fournis une analyse concise mais précise basée sur les données actuelles.`,
 
   const liveMatches = matches.filter(m => m.status === "live");
   
+  // Filtrer uniquement les matchs à venir (pas les passés)
   let filteredMatches = matches.filter(match => {
     if (match.status === "live") return false;
+    if (match.status === "finished") return false; // Exclure matchs terminés
     
     if (match.is_vip && !isPremium) return false;
     
-    const statusMatch = activeTab === "all" 
-      || (activeTab === "upcoming" && (match.status === "upcoming" || !match.status))
-      || (activeTab === "finished" && match.status === "finished")
-      || (activeTab === "analyzed" && match.prediction);
+    const isUpcoming = match.status === "upcoming" || !match.status;
+    const hasAnalysis = match.prediction;
+    
+    const statusMatch = activeTab === "upcoming" ? isUpcoming : hasAnalysis;
     
     const leagueMatch = selectedLeague === "all" || match.league === selectedLeague;
     
     return statusMatch && leagueMatch;
   });
 
-  if (!isPremium && activeTab === "upcoming") {
-    filteredMatches = filteredMatches.slice(0, 3);
-  }
+  // Grouper les matchs par jour
+  const matchesByDay = filteredMatches.reduce((acc, match) => {
+    const date = new Date(match.match_date).toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+    if (!acc[date]) acc[date] = [];
+    acc[date].push(match);
+    return acc;
+  }, {});
 
   const historyStats = {
     total: history.filter(h => h.result !== "pending").length,
@@ -498,7 +509,6 @@ Fournis une analyse concise mais précise basée sur les données actuelles.`,
           <TabsList className="bg-slate-800/30 border border-slate-700/30 p-1 w-full">
             <TabsTrigger value="upcoming" className="flex-1 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">À venir</TabsTrigger>
             <TabsTrigger value="analyzed" className="flex-1 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">Analysés</TabsTrigger>
-            <TabsTrigger value="finished" className="flex-1 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">Terminés</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -545,9 +555,9 @@ Fournis une analyse concise mais précise basée sur les données actuelles.`,
             Réessayer
           </Button>
         </div>
-      ) : filteredMatches.length === 0 ? (
+      ) : Object.keys(matchesByDay).length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-slate-400 text-lg mb-6">Aucun match</p>
+          <p className="text-slate-400 text-lg mb-6">Aucun match à venir</p>
           {user?.role === 'admin' && (
             <LoadMatchesButton 
               existingMatches={matches}
@@ -556,51 +566,54 @@ Fournis une analyse concise mais précise basée sur les données actuelles.`,
           )}
         </div>
       ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredMatches.map((match, index) => (
-              <motion.div
-                key={match.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.03 }}
-                className="relative"
-              >
-                <MatchCard
-                  match={match}
-                  onAnalyze={analyzeMatch}
-                  isAnalyzing={analyzingMatchId === match.id}
-                  onViewDetails={(m) => setSelectedMatch(m)}
-                />
-                {match.prediction && match.result === "pending" && user?.role === 'admin' && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setEditingMatch(match)}
-                    className="absolute top-3 left-3 text-slate-400 hover:text-white p-1.5 h-auto"
-                  >
-                    <Settings className="w-4 h-4" />
-                  </Button>
-                )}
-              </motion.div>
-            ))}
-          </div>
-
-          {!isPremium && activeTab === "upcoming" && matches.filter(m => m.status === "upcoming" || !m.status).length > 3 && (
+        <div className="space-y-8">
+          {Object.entries(matchesByDay).map(([date, dayMatches]) => (
             <motion.div
+              key={date}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-8"
             >
-              <SubscriptionGate 
-                isPremium={false}
-                feature="tous les matchs"
-              >
-                <div className="h-40" />
-              </SubscriptionGate>
+              {/* En-tête du jour */}
+              <div className="flex items-center gap-3 mb-5">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
+                <h3 className="text-lg font-bold text-white capitalize px-4 py-2 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                  {date}
+                </h3>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
+              </div>
+
+              {/* Matchs du jour */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {dayMatches.map((match, index) => (
+                  <motion.div
+                    key={match.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="relative"
+                  >
+                    <MatchCard
+                      match={match}
+                      onAnalyze={analyzeMatch}
+                      isAnalyzing={analyzingMatchId === match.id}
+                      onViewDetails={(m) => setSelectedMatch(m)}
+                    />
+                    {match.prediction && match.result === "pending" && user?.role === 'admin' && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setEditingMatch(match)}
+                        className="absolute top-3 left-3 text-slate-400 hover:text-white p-1.5 h-auto"
+                      >
+                        <Settings className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
             </motion.div>
-          )}
-        </>
+          ))}
+        </div>
       )}
 
       {/* Dialogs */}
