@@ -449,6 +449,9 @@ Fournis une analyse concise mais précise basée sur les données actuelles.`,
     return statusMatch && leagueMatch;
   });
 
+  // Trier les matchs par date (du plus proche au plus éloigné)
+  filteredMatches.sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
+
   // Grouper les matchs par jour
   const matchesByDay = filteredMatches.reduce((acc, match) => {
     const date = new Date(match.match_date).toLocaleDateString('fr-FR', {
