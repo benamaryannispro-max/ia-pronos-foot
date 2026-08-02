@@ -1,0 +1,170 @@
+{
+  "name": "Match",
+  "type": "object",
+  "properties": {
+    "home_team": {
+      "type": "string",
+      "description": "\u00c9quipe \u00e0 domicile"
+    },
+    "away_team": {
+      "type": "string",
+      "description": "\u00c9quipe \u00e0 l'ext\u00e9rieur"
+    },
+    "league": {
+      "type": "string",
+      "description": "Comp\u00e9tition"
+    },
+    "match_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date et heure du match"
+    },
+    "prediction": {
+      "type": "string",
+      "enum": [
+        "home_win",
+        "draw",
+        "away_win",
+        "over_2.5",
+        "under_2.5",
+        "btts_yes",
+        "btts_no",
+        "home_win_ht",
+        "draw_ht",
+        "away_win_ht",
+        "exact_score_1_0",
+        "exact_score_2_0",
+        "exact_score_2_1",
+        "exact_score_3_0",
+        "exact_score_0_0",
+        "exact_score_1_1",
+        "exact_score_0_1",
+        "exact_score_0_2"
+      ],
+      "description": "Pronostic IA principal"
+    },
+    "secondary_predictions": {
+      "type": "array",
+      "description": "Pronostics secondaires (mi-temps, score exact, etc.)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "prediction": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "confidence": {
+      "type": "number",
+      "description": "Niveau de confiance (0-100)"
+    },
+    "analysis": {
+      "type": "string",
+      "description": "Analyse d\u00e9taill\u00e9e IA"
+    },
+    "advanced_analysis": {
+      "type": "object",
+      "description": "Analyse avanc\u00e9e avec stats d\u00e9taill\u00e9es"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "upcoming",
+        "live",
+        "finished"
+      ],
+      "default": "upcoming"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "win",
+        "loss",
+        "pending"
+      ],
+      "default": "pending"
+    },
+    "final_score": {
+      "type": "string",
+      "description": "Score final"
+    },
+    "half_time_score": {
+      "type": "string",
+      "description": "Score \u00e0 la mi-temps"
+    },
+    "external_id": {
+      "type": "string",
+      "description": "ID externe pour \u00e9viter les doublons"
+    },
+    "odds_winamax": {
+      "type": "object",
+      "description": "Cotes Winamax {home, draw, away, recommended}"
+    },
+    "odds_betclic": {
+      "type": "object",
+      "description": "Cotes Betclic {home, draw, away, recommended}"
+    },
+    "odds_parionssport": {
+      "type": "object",
+      "description": "Cotes Parions Sport {home, draw, away, recommended}"
+    },
+    "live_score": {
+      "type": "string",
+      "description": "Score en direct (ex: 1 - 0)"
+    },
+    "live_minute": {
+      "type": "number",
+      "description": "Minute de jeu actuelle"
+    },
+    "live_events": {
+      "type": "array",
+      "description": "\u00c9v\u00e9nements du match (buts, cartons, changements)",
+      "items": {
+        "type": "object"
+      }
+    },
+    "live_analysis": {
+      "type": "string",
+      "description": "Analyse IA en direct du match"
+    },
+    "live_predictions": {
+      "type": "object",
+      "description": "Pronostics dynamiques mis \u00e0 jour en temps r\u00e9el"
+    },
+    "live_updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Derni\u00e8re mise \u00e0 jour des donn\u00e9es live"
+    },
+    "logo_home": {
+      "type": "string",
+      "description": "URL du logo de l'\u00e9quipe \u00e0 domicile"
+    },
+    "logo_away": {
+      "type": "string",
+      "description": "URL du logo de l'\u00e9quipe ext\u00e9rieure"
+    },
+    "is_vip": {
+      "type": "boolean",
+      "default": false,
+      "description": "Pronostic VIP exclusif Premium"
+    },
+    "vip_insights": {
+      "type": "string",
+      "description": "Insights exclusifs pour abonn\u00e9s Premium"
+    }
+  },
+  "required": [
+    "home_team",
+    "away_team",
+    "league",
+    "match_date"
+  ]
+}

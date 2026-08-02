@@ -1,0 +1,61 @@
+{
+  "name": "LeagueStanding",
+  "type": "object",
+  "properties": {
+    "league": {
+      "type": "string",
+      "description": "Nom de la ligue"
+    },
+    "season": {
+      "type": "string",
+      "description": "Saison (ex: 2024/2025)"
+    },
+    "standings": {
+      "type": "array",
+      "description": "Classement complet de la ligue",
+      "items": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "number"
+          },
+          "team_name": {
+            "type": "string"
+          },
+          "played": {
+            "type": "number"
+          },
+          "won": {
+            "type": "number"
+          },
+          "draw": {
+            "type": "number"
+          },
+          "lost": {
+            "type": "number"
+          },
+          "points": {
+            "type": "number"
+          },
+          "goals_for": {
+            "type": "number"
+          },
+          "goals_against": {
+            "type": "number"
+          },
+          "goal_difference": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "league",
+    "season"
+  ]
+}

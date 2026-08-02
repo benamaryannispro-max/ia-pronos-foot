@@ -1,0 +1,66 @@
+{
+  "name": "TeamStats",
+  "type": "object",
+  "properties": {
+    "team_name": {
+      "type": "string",
+      "description": "Nom de l'\u00e9quipe"
+    },
+    "league": {
+      "type": "string",
+      "description": "Ligue de l'\u00e9quipe"
+    },
+    "external_id": {
+      "type": "number",
+      "description": "ID Football-Data.org"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "URL du logo"
+    },
+    "form": {
+      "type": "string",
+      "description": "Forme r\u00e9cente (ex: VVNVD)"
+    },
+    "wins": {
+      "type": "number",
+      "default": 0
+    },
+    "draws": {
+      "type": "number",
+      "default": 0
+    },
+    "losses": {
+      "type": "number",
+      "default": 0
+    },
+    "goals_for": {
+      "type": "number",
+      "default": 0
+    },
+    "goals_against": {
+      "type": "number",
+      "default": 0
+    },
+    "points": {
+      "type": "number",
+      "default": 0
+    },
+    "position": {
+      "type": "number",
+      "description": "Position au classement"
+    },
+    "played_games": {
+      "type": "number",
+      "default": 0
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "team_name",
+    "league"
+  ]
+}

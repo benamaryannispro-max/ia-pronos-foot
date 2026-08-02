@@ -1,0 +1,53 @@
+{
+  "name": "PredictionHistory",
+  "type": "object",
+  "properties": {
+    "match_id": {
+      "type": "string",
+      "description": "ID du match"
+    },
+    "home_team": {
+      "type": "string"
+    },
+    "away_team": {
+      "type": "string"
+    },
+    "league": {
+      "type": "string"
+    },
+    "match_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "prediction": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "odds": {
+      "type": "number"
+    },
+    "final_score": {
+      "type": "string"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "win",
+        "loss",
+        "pending"
+      ],
+      "default": "pending"
+    },
+    "profit": {
+      "type": "number",
+      "description": "Profit/perte sur ce pari"
+    }
+  },
+  "required": [
+    "home_team",
+    "away_team",
+    "league"
+  ]
+}

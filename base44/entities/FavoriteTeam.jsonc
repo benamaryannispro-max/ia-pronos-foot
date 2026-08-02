@@ -1,0 +1,22 @@
+{
+  "name": "FavoriteTeam",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur"
+    },
+    "team_name": {
+      "type": "string",
+      "description": "Nom de l'\u00e9quipe favorite"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "URL du logo de l'\u00e9quipe"
+    }
+  },
+  "required": [
+    "user_email",
+    "team_name"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "name": "UserStats",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur"
+    },
+    "points": {
+      "type": "number",
+      "default": 0,
+      "description": "Points totaux"
+    },
+    "level": {
+      "type": "number",
+      "default": 1,
+      "description": "Niveau de l'utilisateur"
+    },
+    "streak_days": {
+      "type": "number",
+      "default": 0,
+      "description": "Jours cons\u00e9cutifs de connexion"
+    },
+    "last_visit_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Derni\u00e8re visite"
+    },
+    "badges": {
+      "type": "array",
+      "description": "Badges d\u00e9bloqu\u00e9s",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "total_predictions": {
+      "type": "number",
+      "default": 0
+    },
+    "total_wins": {
+      "type": "number",
+      "default": 0
+    },
+    "best_streak": {
+      "type": "number",
+      "default": 0,
+      "description": "Meilleure s\u00e9rie de victoires"
+    },
+    "current_win_streak": {
+      "type": "number",
+      "default": 0,
+      "description": "S\u00e9rie de victoires actuelle"
+    }
+  },
+  "required": [
+    "user_email"
+  ]
+}

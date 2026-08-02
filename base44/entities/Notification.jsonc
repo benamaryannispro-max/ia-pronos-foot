@@ -1,0 +1,53 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "new_prediction",
+        "match_starting",
+        "prediction_result",
+        "badge_earned",
+        "favorite_team_playing"
+      ],
+      "description": "Type de notification"
+    },
+    "title": {
+      "type": "string",
+      "description": "Titre de la notification"
+    },
+    "message": {
+      "type": "string",
+      "description": "Message de la notification"
+    },
+    "match_id": {
+      "type": "string",
+      "description": "ID du match li\u00e9"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Lu ou non"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium"
+    }
+  },
+  "required": [
+    "user_email",
+    "type",
+    "title",
+    "message"
+  ]
+}

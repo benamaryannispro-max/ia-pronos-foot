@@ -1,0 +1,52 @@
+{
+  "name": "Subscription",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email de l'utilisateur abonn\u00e9"
+    },
+    "plan": {
+      "type": "string",
+      "enum": [
+        "free",
+        "premium_monthly",
+        "premium_yearly"
+      ],
+      "default": "free",
+      "description": "Type d'abonnement"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "cancelled",
+        "expired"
+      ],
+      "default": "active",
+      "description": "Statut de l'abonnement"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de d\u00e9but"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date de fin"
+    },
+    "stripe_subscription_id": {
+      "type": "string",
+      "description": "ID Stripe de l'abonnement"
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "ID Stripe du client"
+    }
+  },
+  "required": [
+    "user_email",
+    "plan"
+  ]
+}
